@@ -7,12 +7,13 @@ class SudokuGrid(Frame):
     digits = '123456789'
     delimiters = '0.'
     valid_chars = digits + delimiters
-
+    grid = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
     def __init__(self, parent):
         super().__init__(parent, padding = '5 5 5 5')
-        self.pack(side = 'top')
+        self.pack()
         self.subgrids = []
         self.cells = []
+        self.cells_in_subgrid = {}
         self.make_subgrids()
         self.make_cells()
 
@@ -45,7 +46,13 @@ class SudokuGrid(Frame):
                     elif j in [3, 4, 5]: sub_idx = 7
                     else: sub_idx = 8
                 # assegna la cella al subframe individuato prima
-                cell = SudokuCell(self.subgrids[sub_idx], i, j)
+                subgrid = self.subgrids[sub_idx]
+                cell = SudokuCell(subgrid, i, j)
+                # assegna la cella alla sottogriglia corrispondente
+                if subgrid in self.cells_in_subgrid:
+                    self.cells_in_subgrid[subgrid].append( (i,j) )
+                else:
+                    self.cells_in_subgrid[subgrid] = [ (i,j) ]
                 # posiziona la cella nella sottogriglia
                 subrow = i % 3 + i // 3
                 subcol = j % 3 + j // 3
@@ -65,8 +72,7 @@ class SudokuGrid(Frame):
 
     @staticmethod
     def is_valid_input(string):
-        fix = ''.join(char for char in string if char in SudokuGrid.valid_chars)
-        return len(fix) == 81
+        return len([char for char in string if char in SudokuGrid.valid_chars]) == 81
 
 class SudokuCell(Frame):
     def __init__(self, parent, row, column, is_static = False):
@@ -80,7 +86,7 @@ class SudokuCell(Frame):
         # https://infohost.nmt.edu/tcc/help/pubs/tkinter/web/entry-validation.html
         val_cmd = (self.register(self.validate_input), '%P')
         self.entry = Entry(self, width = 3, justify = 'center', font = self.sudoku_font,
-                           validate = 'all', validatecommand = val_cmd,
+                           validate = 'key', validatecommand = val_cmd,
                            textvariable = self.text)
         self.entry.pack(ipady = 3)
 
