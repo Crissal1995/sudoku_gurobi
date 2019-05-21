@@ -1,15 +1,13 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import font
+from Model.sudoku_model import SudokuGrid
 
 # classe per gestire la griglia del sudoku
-class SudokuGrid(Frame):
-    digits = '123456789'
-    delimiters = '0.'
-    valid_chars = digits + delimiters
-    grid = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
+class SudokuFrame(Frame):
     def __init__(self, parent):
         super().__init__(parent, padding = '5 5 5 5')
+        self.sudoku_grid = SudokuGrid.get_instance()
         self.pack()
         self.subgrids = []
         self.cells = []
@@ -61,8 +59,7 @@ class SudokuGrid(Frame):
                 self.cells.append(cell)
 
     def load_grid(self, grid: str):
-        assert(self.is_valid_input(grid))
-        # TODO: inserire la logica per assicurarsi che la stringa inserita sia valida
+        assert(self.sudoku_grid.is_valid_grid())
         for i in range(81):
             self.cells[i].make_nonstatic()
             digit = grid[i]
@@ -70,11 +67,7 @@ class SudokuGrid(Frame):
             self.cells[i].set_value(digit)
             if digit != '': self.cells[i].make_static()
         # cambiare la griglia inserita
-        self.grid = grid
-
-    @staticmethod
-    def is_valid_input(string):
-        return len([char for char in string if char in SudokuGrid.valid_chars]) == 81
+        self.sudoku_grid.set_grid(grid)
 
 class SudokuCell(Frame):
     def __init__(self, parent, row, column, is_static = False):

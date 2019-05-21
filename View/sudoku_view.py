@@ -1,18 +1,18 @@
 from tkinter import *
 from tkinter.ttk import *
 import Controller.sudoku_controller as control
-import Model.sudoku_view_model as model
+import View.sudoku_frame as model
 
 class ViewManager:
     def __init__(self, controller: control.Controller):
-        # inizializzazione gui
+
+        ### inizializzazione gui
         self.root = Tk()
         self.root.title('GUS - Gurobi Sudoku')
         # creiamo la griglia del sudoku
-        self.sudoku_grid = model.SudokuGrid(self.root)
-        # TODO: separare model e view da sudoku grid
-        ###
-        # frame per contenere label e slider delle celle piene
+        self.sudoku_frame = model.SudokuFrame(self.root)
+
+        ### frame per contenere label e slider delle celle piene
         self.nnz_frame = Frame(self.root, padding = '5 5 5 5')
         self.nnz_frame.pack()
 
@@ -20,19 +20,15 @@ class ViewManager:
         self.nnz_label = Label(self.nnz_frame, text='Numero di celle piene: 17', justify=CENTER)
         self.nnz_label.grid(row=0, column=0, sticky=(W, E))
 
-        # funzione chiamata ogni volta che lo slider si ferma
-        def edit_label(_):
-            self.nnz_label.configure(text = f'Numero di celle piene: {self.nnz.get()}')
         # variabile contenente il valore dello slider
         self.nnz = IntVar()
         self.nnz.set(17)
         # slider per decidere un numero in un range fissato
         self.nnz_scale = Scale(self.nnz_frame, from_=17, to=60, orient=HORIZONTAL,
-                               variable=self.nnz, command=edit_label)
+                               variable=self.nnz, command=self.edit_label)
         self.nnz_scale.grid(row=1, column=0, sticky=(W, E))
 
-        ###
-        # frame per contenere i bottoni
+        ### frame per contenere i bottoni
         self.buttons_frame = Frame(self.root, padding='5 5 5 5')
         self.buttons_frame.pack()
 
@@ -58,4 +54,8 @@ class ViewManager:
         self.root.mainloop()
 
     def load_grid(self, grid: str):
-        self.sudoku_grid.load_grid(grid)
+        self.sudoku_frame.load_grid(grid)
+
+    # funzione chiamata ogni volta che lo slider si ferma
+    def edit_label(self):
+        self.nnz_label.configure(text=f'Numero di celle piene: {self.nnz.get()}')
