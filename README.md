@@ -1,7 +1,7 @@
 # sudoku
 
 ## Prerequisiti
-(Gurobi Optimizer)[http://www.gurobi.com/index] e Python 3 64bit
+[Gurobi Optimizer](http://www.gurobi.com/index) e Python 3 64bit
 
 ## Guida installazione Gurobi
 * Installare normalmente
