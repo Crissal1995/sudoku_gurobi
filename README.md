@@ -1,4 +1,4 @@
-# sudoku
+# sudoku_gurobi
 
 ## Prerequisiti
 [Gurobi Optimizer](http://www.gurobi.com/index) e Python 3 64bit
