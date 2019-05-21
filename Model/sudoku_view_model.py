@@ -60,15 +60,17 @@ class SudokuGrid(Frame):
                 # aggiungi la cella al vettore delle ref
                 self.cells.append(cell)
 
-    def load_grid(self, sudoku_str):
-        assert(self.is_valid_input(sudoku_str))
+    def load_grid(self, grid: str):
+        assert(self.is_valid_input(grid))
         # TODO: inserire la logica per assicurarsi che la stringa inserita sia valida
         for i in range(81):
             self.cells[i].make_nonstatic()
-            digit = sudoku_str[i]
+            digit = grid[i]
             if digit in SudokuGrid.delimiters: digit = ''
             self.cells[i].set_value(digit)
             if digit != '': self.cells[i].make_static()
+        # cambiare la griglia inserita
+        self.grid = grid
 
     @staticmethod
     def is_valid_input(string):

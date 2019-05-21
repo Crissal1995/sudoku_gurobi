@@ -6,28 +6,25 @@ from tkinter import Tk
 
 class Controller:
     def __init__(self):
-        # creazione finestra GUI
-        self.root = Tk()
-        self.root.title('GUS - Gurobi Sudoku')
-        # creazione frame griglia sudoku
-        self.sudoku_grid = vmodel.SudokuGrid(self.root)
+        # creiamo la gui del programma
+        self.view_manager = view.ViewManager(self)
         # creazione controller Gurobi e relativo modello
         self.gurobi_control = gurobi.GurobiController(self.sudoku_grid)
         # settiamo una griglia di partenza
         self.load_current_grid()
-        # settiamo il modello sulla griglia caricata
-        self.gurobi_control.set_grid(self.grid)
-        # creiamo il resto dei frame
-        self.view_manager = view.ViewManager(self, self.root)
         # lanciamo l'applicazione
-        self.root.mainloop()
+        self.view_manager.start_app()
 
-    def load_current_grid(self):
-        self.sudoku_grid.load_grid(self.sudoku_grid.grid)
+    @property
+    def sudoku_grid(self):
+        return self.view_manager.sudoku_grid
 
     @property
     def grid(self):
         return self.sudoku_grid.grid
+
+    def load_current_grid(self):
+        self.sudoku_grid.load_grid(self.sudoku_grid.grid)
 
     def set_grid(self, grid2):
         self.sudoku_grid.grid = grid2
@@ -40,6 +37,7 @@ class Controller:
         self.load_current_grid()
 
     def risolve_sudoku(self):
+        self.gurobi_control.set_vars(self.grid)
         grid_sol = self.gurobi_control.resolve_grid()
         self.set_grid(grid_sol)
         self.load_current_grid()

@@ -1,12 +1,19 @@
 from tkinter import *
 from tkinter.ttk import *
 import Controller.sudoku_controller as control
+import Model.sudoku_view_model as model
 
 class ViewManager:
-    def __init__(self, controller: control.Controller, root: Tk):
+    def __init__(self, controller: control.Controller):
+        # inizializzazione gui
+        self.root = Tk()
+        self.root.title('GUS - Gurobi Sudoku')
+        # creiamo la griglia del sudoku
+        self.sudoku_grid = model.SudokuGrid(self.root)
+        # TODO: separare model e view da sudoku grid
         ###
         # frame per contenere label e slider delle celle piene
-        self.nnz_frame = Frame(root, padding = '5 5 5 5')
+        self.nnz_frame = Frame(self.root, padding = '5 5 5 5')
         self.nnz_frame.pack()
 
         # label per indicare il num di caselle piene scelto
@@ -26,7 +33,7 @@ class ViewManager:
 
         ###
         # frame per contenere i bottoni
-        self.buttons_frame = Frame(root, padding='5 5 5 5')
+        self.buttons_frame = Frame(self.root, padding='5 5 5 5')
         self.buttons_frame.pack()
 
         # bottone per generare un puzzle random
@@ -46,3 +53,9 @@ class ViewManager:
 
     def get_choice(self):
         return self.nnz.get()
+
+    def start_app(self):
+        self.root.mainloop()
+
+    def load_grid(self, grid: str):
+        self.sudoku_grid.load_grid(grid)
