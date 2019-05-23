@@ -1,5 +1,4 @@
 from gurobipy import *
-from View.sudoku_frame import SudokuFrame
 from Model.sudoku_model import SudokuGrid
 import random
 
@@ -7,7 +6,7 @@ class GurobiController:
     # il costruttore crea modello e vincoli seguendo le regole del sudoku;
     # per poter differenziare lo schema, dobbiamo chiamare la funzione set_grid()
     # per poter assegnare un lowerbound di 1 alla cella (i,j) con valore k -> x_ijk
-    def __init__(self, sudoku_frame: SudokuFrame):
+    def __init__(self, sudoku_grid: SudokuGrid):
         self.model: Model = Model('gus')
         self.vars = self.model.addVars(9,9,9, vtype=GRB.BINARY, name='x_ijk')
         ### constraints
@@ -24,14 +23,15 @@ class GurobiController:
             (self.vars.sum(i,'*',k) == 1 for i in range(9) for k in range(9))
         )
         # In ogni riquadro della tabella devono essere presenti tutti i numeri da 1 a 9
-        for subgrid in sudoku_frame.subgrids:
+        for i in range(9):
+            cells = sudoku_grid.cells_in_subgrid[i]
             self.model.addConstrs(
-                (self.vars.sum(i,j,'*') == 1 for (i,j) in sudoku_frame.cells_in_subgrid[subgrid])
+                (self.vars.sum(i,j,'*') == 1 for (i,j) in cells)
             )
         # Funzione obiettivo fittizia, massimizzo la somma delle variabili x_ijk
         # La z è il numero di celle, come UB implicito c'è 81
         self.model.setObjective(
-            sum(self.vars.values())
+            sum(self.vars.values()), sense=GRB.MAXIMIZE
         )
 
     # funzione per resettare i vincoli
@@ -48,12 +48,11 @@ class GurobiController:
             for j in range(9):
                 k = grid[i*9 + j]
                 if k not in SudokuGrid.delimiters:
-                    self.vars[i,j,int(k)-1].LB = 1
+                    self.vars[i,j,int(k)-1].LB = 1 # salvo k come k-1
 
-    # funzione per ottenere il numero di var = 1 (quindi celle piene)
-    def get_count_vars(self):
-        obj = self.model.getObjective()
-        return int(obj.getValue())
+    @property
+    def objective(self):
+        return int(self.model.getObjective().getValue())
 
     # funzione per risolvere la griglia corrente
     def resolve_grid(self):
@@ -63,8 +62,8 @@ class GurobiController:
         for x_ijk, value in vars_dict.items():
             # i,j = x_ijk[:1]
             k = x_ijk[2]
-            if value == 1: grid_sol += f'{k+1}'
-        print(f'Numero di celle piene: {self.get_count_vars()}')
+            if value == 1: grid_sol += f'{k+1}' # salvo k come k+1
+        print(f'Numero di celle piene: {self.objective}')
         return grid_sol
 
     # funzione per generare una griglia

@@ -6,16 +6,17 @@ from tkinter import messagebox
 class Controller:
     def __init__(self):
         # instanziamo il singleton del model
-        self.sudoku_grid = model.SudokuGrid.get_instance()
+        self.sudoku_grid = model.SudokuGrid()
 
         # creiamo la gui del programma
         self.view_manager = view.ViewManager(self)
 
         # creazione controller Gurobi e relativo modello
-        self.gurobi_control = gurobi.GurobiController(self.view_manager.sudoku_frame)
+        self.gurobi_control = gurobi.GurobiController(self.sudoku_grid)
 
         # settiamo una griglia di partenza
         self.load_current_grid()
+
         # lanciamo l'applicazione
         self.view_manager.start_app()
 
@@ -24,17 +25,21 @@ class Controller:
         return self.sudoku_grid.grid
 
     def load_current_grid(self):
-        self.view_manager.sudoku_frame.load_grid(self.sudoku_grid.grid)
+        self.view_manager.sudoku_frame.load_grid(self.grid)
 
     ######## FUNZIONI CALLBACK (associate ai bottoni nella GUI)
     def generate_sudoku(self):
         self.gurobi_control.reset_vars()
         nnz = self.view_manager.get_choice()
         assert(17 <= nnz <= 81)
-        self.sudoku_grid.set_grid(self.grid[-7:] + self.grid[:-7]) # debug
+        ### TODO GENERAZIONE
+        self.sudoku_grid.set_grid(self.grid[-7:] + self.grid[:-7])
+        ### END GENERAZIONE
         self.load_current_grid()
 
     def risolve_sudoku(self):
+        if self.gurobi_control.objective == 81:
+            return messagebox.showwarning('Errore','Il sudoku è già stato risolto!')
         self.gurobi_control.set_vars(self.grid)
         grid_sol = self.gurobi_control.resolve_grid()
         self.sudoku_grid.set_grid(grid_sol)

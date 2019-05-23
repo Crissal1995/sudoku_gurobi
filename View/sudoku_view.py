@@ -5,7 +5,6 @@ import View.sudoku_frame as model
 
 class ViewManager:
     def __init__(self, controller: control.Controller):
-
         ### inizializzazione gui
         self.root = Tk()
         self.root.title('GUS - Gurobi Sudoku')
@@ -23,6 +22,7 @@ class ViewManager:
         # variabile contenente il valore dello slider
         self.nnz = IntVar()
         self.nnz.set(17)
+
         # slider per decidere un numero in un range fissato
         self.nnz_scale = Scale(self.nnz_frame, from_=17, to=60, orient=HORIZONTAL,
                                variable=self.nnz, command=self.edit_label)
@@ -57,5 +57,5 @@ class ViewManager:
         self.sudoku_frame.load_grid(grid)
 
     # funzione chiamata ogni volta che lo slider si ferma
-    def edit_label(self):
-        self.nnz_label.configure(text=f'Numero di celle piene: {self.nnz.get()}')
+    def edit_label(self, _):
+        self.nnz_label.configure(text=f'Numero di celle piene: {self.get_choice()}')

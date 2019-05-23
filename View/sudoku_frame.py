@@ -6,16 +6,22 @@ from Model.sudoku_model import SudokuGrid
 # classe per gestire la griglia del sudoku
 class SudokuFrame(Frame):
     def __init__(self, parent):
+        # creazione grafica del frame
         super().__init__(parent, padding = '5 5 5 5')
-        self.sudoku_grid = SudokuGrid.get_instance()
         self.pack()
-        self.subgrids = []
-        self.cells = []
-        self.cells_in_subgrid = {}
-        self.make_subgrids()
-        self.make_cells()
+
+        # definizione del sudoku_grid, modello del sudoku
+        self.sudoku_grid = SudokuGrid()
+
+        # vettore dei subgrids frame
+        self.subgrids = self.make_subgrids()
+
+        # otteniamo le celle (frame) e le celle nella sottogriglia (indici)
+        # che ci servono poi dopo nel gurobi_controller
+        self.cells, self.sudoku_grid.cells_in_subgrid = self.make_cells()
 
     def make_subgrids(self):
+        subgrids = []
         for i in range(3):
             for j in range(3):
                 if j == 2:  # ultima cella della riga
@@ -24,9 +30,11 @@ class SudokuFrame(Frame):
                     padding = '0 0 5 5'
                 subf = Frame(self, padding=padding)
                 subf.grid(row=i, column=j)
-                self.subgrids.append(subf)
+                subgrids.append(subf)
+        return subgrids
 
     def make_cells(self):
+        cells, cells_in_subgrid = ([],{})
         for i in range(9):
             for j in range(9):
                 sub_idx = None
@@ -47,16 +55,17 @@ class SudokuFrame(Frame):
                 subgrid = self.subgrids[sub_idx]
                 cell = SudokuCell(subgrid, i, j)
                 # assegna la cella alla sottogriglia corrispondente
-                if subgrid in self.cells_in_subgrid:
-                    self.cells_in_subgrid[subgrid].append( (i,j) )
+                if subgrid in cells_in_subgrid:
+                    cells_in_subgrid[sub_idx].append( (i,j) )
                 else:
-                    self.cells_in_subgrid[subgrid] = [ (i,j) ]
+                    cells_in_subgrid[sub_idx] = [ (i,j) ]
                 # posiziona la cella nella sottogriglia
                 subrow = i % 3 + i // 3
                 subcol = j % 3 + j // 3
                 cell.grid(row=subrow, column=subcol)
                 # aggiungi la cella al vettore delle ref
-                self.cells.append(cell)
+                cells.append(cell)
+        return cells, cells_in_subgrid
 
     def load_grid(self, grid: str):
         assert(self.sudoku_grid.is_valid_grid())
