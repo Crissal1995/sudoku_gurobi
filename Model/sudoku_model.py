@@ -6,7 +6,6 @@ class SudokuGrid:
     digits = '123456789'
     delimiters = '0.'
     valid_chars = digits + delimiters
-    cells_in_subgrid = {}
 
     __instance = None
     # singleton pattern
@@ -16,8 +15,13 @@ class SudokuGrid:
         SudokuGrid.__instance.grid = grid
         return SudokuGrid.__instance
 
+    @property
+    def full_cells_count(self):
+        return len([c for c in self.grid if c in SudokuGrid.digits])
+
     def set_grid(self, grid: str):
         self.grid = grid
 
+    # TODO INSERIRE VALIDAZIONE CON GUROBI
     def is_valid_grid(self):
         return len([char for char in self.grid if char in SudokuGrid.valid_chars]) == 81

@@ -18,7 +18,8 @@ class SudokuFrame(Frame):
 
         # otteniamo le celle (frame) e le celle nella sottogriglia (indici)
         # che ci servono poi dopo nel gurobi_controller
-        self.cells, self.sudoku_grid.cells_in_subgrid = self.make_cells()
+        cells_frame = self.make_cells()
+        self.cells = cells_frame
 
     def make_subgrids(self):
         subgrids = []
@@ -34,7 +35,7 @@ class SudokuFrame(Frame):
         return subgrids
 
     def make_cells(self):
-        cells, cells_in_subgrid = ([],{})
+        cells = []
         for i in range(9):
             for j in range(9):
                 sub_idx = None
@@ -54,27 +55,24 @@ class SudokuFrame(Frame):
                 # assegna la cella al subframe individuato prima
                 subgrid = self.subgrids[sub_idx]
                 cell = SudokuCell(subgrid, i, j)
-                # assegna la cella alla sottogriglia corrispondente
-                if subgrid in cells_in_subgrid:
-                    cells_in_subgrid[sub_idx].append( (i,j) )
-                else:
-                    cells_in_subgrid[sub_idx] = [ (i,j) ]
                 # posiziona la cella nella sottogriglia
                 subrow = i % 3 + i // 3
                 subcol = j % 3 + j // 3
                 cell.grid(row=subrow, column=subcol)
                 # aggiungi la cella al vettore delle ref
                 cells.append(cell)
-        return cells, cells_in_subgrid
+        return cells
 
-    def load_grid(self, grid: str):
+    def load_grid(self, grid: str, first_load = True):
         assert(self.sudoku_grid.is_valid_grid())
         for i in range(81):
-            self.cells[i].make_nonstatic()
+            if first_load:
+                self.cells[i].make_nonstatic()
             digit = grid[i]
             if digit in SudokuGrid.delimiters: digit = ''
             self.cells[i].set_value(digit)
-            if digit != '': self.cells[i].make_static()
+            if digit != '' and first_load:
+                self.cells[i].make_static()
         # cambiare la griglia inserita
         self.sudoku_grid.set_grid(grid)
 
@@ -86,21 +84,16 @@ class SudokuCell(Frame):
         self.column = column
         self.is_static = is_static
         self.text = StringVar()
-        # %P è il parametro della nuova stringa che si ottiene in digitazione
-        # https://infohost.nmt.edu/tcc/help/pubs/tkinter/web/entry-validation.html
-        val_cmd = (self.register(self.validate_input), '%P')
+        val_cmd = (self.register(self.validate_input))
         self.entry = Entry(self, width = 3, justify = 'center', font = self.sudoku_font,
-                           validate = 'key', validatecommand = val_cmd,
+                           validate = 'all', validatecommand = val_cmd,
                            textvariable = self.text)
         self.entry.pack(ipady = 3)
 
-    # funzione callback per validare l'input ed assicurarci che ogni casella
-    # o sia vuota o abbia una sola cifra
-    def validate_input(self, new_value):
-        if self.is_static: return False
-        if new_value == '' or new_value in SudokuGrid.digits:
-            if len(new_value) <= 1: return True
-            else: return False
+    # funzione callback per non permettere l'inserimento dell'utente
+    # solo generazione e risolutore sudoku
+    @staticmethod
+    def validate_input():
         return False
 
     # funzioni per manipolare il testo all'interno di ogni cella

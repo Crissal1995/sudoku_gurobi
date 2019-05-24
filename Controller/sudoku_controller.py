@@ -24,31 +24,39 @@ class Controller:
     def grid(self):
         return self.sudoku_grid.grid
 
-    def load_current_grid(self):
-        self.view_manager.sudoku_frame.load_grid(self.grid)
+    def load_current_grid(self, first_load=True):
+        self.view_manager.sudoku_frame.load_grid(self.grid, first_load)
 
-    ######## FUNZIONI CALLBACK (associate ai bottoni nella GUI)
+    # Funzioni callback associate ai bottoni nella GUI
     def generate_sudoku(self):
         self.gurobi_control.reset_vars()
         nnz = self.view_manager.get_choice()
         assert(17 <= nnz <= 81)
-        ### TODO GENERAZIONE
+        # TODO GENERAZIONE REALE CON GUROBI
         self.sudoku_grid.set_grid(self.grid[-7:] + self.grid[:-7])
-        ### END GENERAZIONE
+        # END GENERAZIONE
         self.load_current_grid()
 
     def risolve_sudoku(self):
-        if self.gurobi_control.objective == 81:
+        if self.sudoku_grid.full_cells_count == 81:
             return messagebox.showwarning('Errore','Il sudoku è già stato risolto!')
         self.gurobi_control.set_vars(self.grid)
         grid_sol = self.gurobi_control.resolve_grid()
         self.sudoku_grid.set_grid(grid_sol)
-        self.load_current_grid()
+        self.load_current_grid(first_load=False)
 
     def reset_sudoku(self):
         if messagebox.askokcancel('Reset', 'Vuoi resettare il puzzle?'):
-            for c in self.sudoku_grid.cells:
-                if not c.is_static: c.clear_value()
+            new_grid = ''
+            curr_grid = self.sudoku_grid.grid
+            for c in self.view_manager.sudoku_frame.cells:
+                if not c.is_static:
+                    c.clear_value()
+                    new_grid += '.'
+                else:
+                    new_grid += curr_grid[c.row*9 + c.column]
+            self.sudoku_grid.grid = new_grid
+            self.load_current_grid()
 
 if __name__ == '__main__':
     controller = Controller()

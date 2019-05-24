@@ -23,12 +23,15 @@ class GurobiController:
             (self.vars.sum(i,'*',k) == 1 for i in range(9) for k in range(9))
         )
         # In ogni riquadro della tabella devono essere presenti tutti i numeri da 1 a 9
-        for i in range(9):
-            cells = sudoku_grid.cells_in_subgrid[i]
-            self.model.addConstrs(
-                (self.vars.sum(i,j,'*') == 1 for (i,j) in cells)
-            )
-        # Funzione obiettivo fittizia, massimizzo la somma delle variabili x_ijk
+        self.model.addConstrs(
+            (quicksum(self.vars[i,j,k]
+                     for i in range(subrow * 3, (subrow+1) * 3)
+                     for j in range(subcol * 3, (subcol+1) * 3)) == 1
+            for k in range(9)
+            for subrow in range(3)
+            for subcol in range(3))
+        )
+        # Funzione obiettivo, massimizzo la somma delle variabili x_ijk
         # La z è il numero di celle, come UB implicito c'è 81
         self.model.setObjective(
             sum(self.vars.values()), sense=GRB.MAXIMIZE
@@ -79,3 +82,4 @@ class GurobiController:
             rand_col = random.choice(free_cols)
             digit = random.choice(digits)
             # TODO GABRIELE
+            pass
