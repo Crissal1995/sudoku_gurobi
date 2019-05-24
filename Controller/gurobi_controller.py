@@ -6,7 +6,7 @@ class GurobiController:
     # il costruttore crea modello e vincoli seguendo le regole del sudoku;
     # per poter differenziare lo schema, dobbiamo chiamare la funzione set_grid()
     # per poter assegnare un lowerbound di 1 alla cella (i,j) con valore k -> x_ijk
-    def __init__(self, sudoku_grid: SudokuGrid):
+    def __init__(self):
         self.model: Model = Model('gus')
         self.vars = self.model.addVars(9,9,9, vtype=GRB.BINARY, name='x_ijk')
         ### constraints
@@ -73,13 +73,4 @@ class GurobiController:
     def generate_grid(self, nnz: int = 17):
         assert(17 <= nnz <= 81)
         self.reset_vars()
-        count = 0
-        free_rows = [0,1,2,3,4,5,6,7,8]
-        free_cols = [0,1,2,3,4,5,6,7,8]
-        digits = [1,2,3,4,5,6,7,8,9]
-        while count < nnz:
-            rand_row = random.choice(free_rows)
-            rand_col = random.choice(free_cols)
-            digit = random.choice(digits)
-            # TODO GABRIELE
-            pass
+        # TODO GENERAZIONE GRIGLIA

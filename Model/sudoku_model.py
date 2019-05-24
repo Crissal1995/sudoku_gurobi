@@ -25,3 +25,7 @@ class SudokuGrid:
     # TODO INSERIRE VALIDAZIONE CON GUROBI
     def is_valid_grid(self):
         return len([char for char in self.grid if char in SudokuGrid.valid_chars]) == 81
+
+    # TODO CREARE SEEDS SIA SEMIVUOTIVUOTI CHE PIENI
+    # TODO QUELLI PIENI SERVONO PER GENERARE IL SUDOKU (PIENA -> SEMIVUOTA)
+    # TODO QUELLI SEMIVUOTI SERVONO PER CARICARE RANDOMICAMENTE IL SUDOKU INIZIALE

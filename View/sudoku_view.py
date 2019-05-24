@@ -1,10 +1,10 @@
 from tkinter import *
 from tkinter.ttk import *
-import Controller.sudoku_controller as control
+import Controller.sudoku_controller as ctr
 import View.sudoku_frame as model
 
 class ViewManager:
-    def __init__(self, controller: control.Controller):
+    def __init__(self, controller: ctr.Controller):
         ### inizializzazione gui
         self.root = Tk()
         self.root.title('GUS - Gurobi Sudoku')
