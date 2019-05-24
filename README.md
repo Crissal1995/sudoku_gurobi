@@ -9,9 +9,5 @@
 * Eseguire `python setup.py install` nella folder di installazione di Gurobi (default C:\gurobi811)
 
 ## TODO
-### Necessario
 * Implementare correttamente la funzione generatrice delle griglie
-
-### Facoltativo
-* Rimuovere inserimento utente nelle celle?
-* Marcare celle generate da Gurobi (es con un font color rosso o bold) per distinguere dalle celle generate in fase di risoluzione
+* Altro (cercare `# TODO`nei commenti)
