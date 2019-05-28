@@ -34,7 +34,7 @@ class GurobiController:
         # Funzione obiettivo, massimizzo la somma delle variabili x_ijk
         # La z è il numero di celle, come UB implicito c'è 81
         self.model.setObjective(
-            sum(self.vars.values()), sense=GRB.MAXIMIZE
+            quicksum(self.vars.values()), sense=GRB.MAXIMIZE
         )
 
     # funzione per resettare i vincoli
