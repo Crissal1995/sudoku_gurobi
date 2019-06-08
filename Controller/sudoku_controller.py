@@ -1,5 +1,6 @@
 import Controller.gurobi_controller as gurobi
 import Model.sudoku_model as model
+import random
 from tkinter import messagebox
 
 class Controller:
@@ -34,10 +35,11 @@ class Controller:
         self.gurobi_control.reset_vars()
         nnz = self.view_manager.get_choice()
         assert(17 <= nnz <= 81)
-        # TODO GENERAZIONE REALE CON GUROBI
         # debug
-        self.sudoku_grid.set_grid(self.grid[-7:] + self.grid[:-7])
-        # TODO FINE GENERAZIONE
+        #self.sudoku_grid.set_grid(self.grid[-7:] + self.grid[:-7])
+        completeGrid = self.generate_seed()
+        grid = self.generate_grid(completeGrid, nnz)
+        self.sudoku_grid.grid = grid
         self.load_current_grid()
 
     def risolve_sudoku(self):
@@ -50,6 +52,46 @@ class Controller:
             return messagebox.showerror('Errore', 'Il sudoku non ha soluzione!')
         self.sudoku_grid.set_grid(grid_sol)
         self.load_current_grid(first_load=False)
+
+    def generate_seed(self):
+        numberList = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        random.seed()
+        random.shuffle(numberList)
+        seed = '0' * 81
+        #seed = list(seed)
+        tempNumeber = numberList;
+        for row in [0, 8]:
+            for col in [0, 8]:
+                element = random.choice(tempNumeber)
+                seed = seed[:row * 9 + col] + str(element) + seed[row * 9 + col + 1:]
+                tempNumeber.remove(element)
+
+        for element in numberList:
+            row = random.randint(1, 7)
+            col = random.randint(1, 7)
+            seed = seed[:row*9+col] + str(element) + seed[row*9+col + 1:]
+        print("Nuovo seed" + seed)
+        self.gurobi_control.set_vars(seed)
+        completeGrid = self.gurobi_control.resolve_grid()
+        self.sudoku_grid.set_grid(completeGrid)
+        return completeGrid
+
+    def generate_grid(self, completeGrid, nnz) :
+        while( self.sudoku_grid.full_cells_count > nnz ):
+            row = random.randint(0, 8)
+            col = random.randint(0, 8)
+            oldElement = completeGrid[row*9+col]
+            completeGrid = completeGrid[:row * 9 + col] + "0" + completeGrid[row * 9 + col + 1:]
+            self.sudoku_grid.grid = completeGrid
+
+#            self.gurobi_control.set_vars(completeGrid)
+
+            try :
+                self.gurobi_control.resolve_grid()
+            except gurobi.GurobiError:
+                completeGrid = completeGrid[:row * 9 + col] + str(oldElement) + completeGrid[row * 9 + col + 1:]
+
+        return completeGrid
 
     # TODO: CONTROLLARE DEPRECATO
     # Stato: deprecato
