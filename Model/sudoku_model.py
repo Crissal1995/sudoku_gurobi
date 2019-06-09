@@ -2,7 +2,7 @@
 # per gestire un'unica griglia sudoku
 
 class SudokuGrid:
-    default_grid = '000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+    default_grid = '0'*81
     grid = ''
     digits = '123456789'
     delimiters = '0.'

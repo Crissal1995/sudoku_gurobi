@@ -20,7 +20,7 @@ class Controller:
         # settiamo una griglia di partenza
         self.load_current_grid()
 
-        # lanciamo l'applicazione
+    def start_app(self):
         self.view_manager.start_app()
 
     @property
