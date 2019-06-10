@@ -26,7 +26,7 @@ class SudokuGrid:
 
     def is_valid_grid(self):
         return len([char for char in self.grid if char in SudokuGrid.valid_chars]) == 81 and \
-                len(gurobi.GurobiController().resolve_grid_from_str(self.grid)) == 81
+               len(gurobi.GurobiController().resolve_grid(self.grid)) == 81
 
     @staticmethod
     def full_cells_count(grid: str):

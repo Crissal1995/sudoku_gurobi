@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 import Controller.sudoku_controller as ctr
 import View.sudoku_frame as model
+from tkinter import messagebox
 
 class ViewManager:
     def __init__(self, controller: ctr.Controller):
@@ -54,3 +55,9 @@ class ViewManager:
     # funzione chiamata ogni volta che lo slider si ferma
     def edit_label(self, _):
         self.nnz_label.configure(text=f'Numero di celle piene: {self.get_choice()}')
+
+    def display_warning(self, message: str):
+        return messagebox.showwarning('Attenzione', message)
+
+    def display_error(self, message: str):
+        return messagebox.showerror('Errore', message)

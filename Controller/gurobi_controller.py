@@ -67,7 +67,7 @@ class GurobiController:
         return grid_sol
 
     # funzione per risolvere una griglia passata in input
-    def resolve_grid_from_str(self, grid: str):
+    def resolve_grid(self, grid: str):
         self._set_vars(grid)
         sol = self._resolve_grid()
         self._reset_vars()
