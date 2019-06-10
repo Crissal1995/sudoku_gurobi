@@ -1,6 +1,4 @@
 from gurobipy import *
-from Model.sudoku_model import SudokuGrid
-import random
 
 class GurobiController:
     # il costruttore crea modello e vincoli seguendo le regole del sudoku;
@@ -38,19 +36,19 @@ class GurobiController:
         )
 
     # funzione per resettare i vincoli
-    def reset_vars(self):
+    def _reset_vars(self):
         for i in range(9):
             for j in range(9):
                 for k in range(9):
                     self.vars[i,j,k].LB = 0
 
     # funzione per settare i vincoli, data una griglia (str) in ingresso
-    def set_vars(self, grid: str):
+    def _set_vars(self, grid: str):
         assert(len(grid) == 81)
         for i in range(9):
             for j in range(9):
                 k = grid[i*9 + j]
-                if k not in SudokuGrid.delimiters:
+                if k not in '0.':
                     self.vars[i,j,int(k)-1].LB = 1 # salvo k come k-1
 
     @property
@@ -58,7 +56,7 @@ class GurobiController:
         return int(self.model.getObjective().getValue())
 
     # funzione per risolvere la griglia corrente
-    def resolve_grid(self):
+    def _resolve_grid(self):
         self.model.optimize()
         vars_dict = self.model.getAttr('X', self.vars)
         grid_sol = ''
@@ -66,11 +64,11 @@ class GurobiController:
             # i,j = x_ijk[:1]
             k = x_ijk[2]
             if value == 1: grid_sol += f'{k+1}' # salvo k come k+1
-        print(f'Numero di celle piene: {self.objective}')
         return grid_sol
 
-    # funzione per generare una griglia
-    def generate_grid(self, nnz: int = 17):
-        assert(17 <= nnz <= 81)
-        self.reset_vars()
-        # TODO GENERAZIONE GRIGLIA
+    # funzione per risolvere una griglia passata in input
+    def resolve_grid_from_str(self, grid: str):
+        self._set_vars(grid)
+        sol = self._resolve_grid()
+        self._reset_vars()
+        return sol

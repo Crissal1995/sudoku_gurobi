@@ -42,19 +42,6 @@ class ViewManager:
                                      command=controller.risolve_sudoku)
         self.risolve_button.grid(row=0, column=1, sticky=(W, E))
 
-        # TODO: CONTROLLARE DEPRECATO
-        # Stato: deprecato
-        # ---------
-        # Motivazione:
-        # Non serve cancellare la griglia se non è possibile per l'utente
-        # inserire caratteri nelle celle.
-        # A meno di non voler creare proprio un gioco Sudoku con inserimento
-        # e validazione, ma credo che esuli dalla specifica.
-        # bottone per resettare il puzzle corrente
-        # self.reset_button = Button(self.buttons_frame, text='Resetta puzzle',
-        #                           command=controller.reset_sudoku)
-        # self.reset_button.grid(row=1, column=0, columnspan=2, sticky=(W, E))
-
     def get_choice(self):
         return self.nnz.get()
 

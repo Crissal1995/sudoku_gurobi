@@ -23,92 +23,68 @@ class Controller:
     def start_app(self):
         self.view_manager.start_app()
 
-    @property
-    def grid(self):
-        return self.sudoku_grid.grid
-
     def load_current_grid(self, first_load=True):
-        self.view_manager.sudoku_frame.load_grid(self.grid, first_load)
+        self.view_manager.sudoku_frame.load_grid(self.sudoku_grid.grid, first_load)
 
     # Funzioni callback associate ai bottoni nella GUI
     def generate_sudoku(self):
-        self.gurobi_control.reset_vars()
         nnz = self.view_manager.get_choice()
         assert(17 <= nnz <= 81)
-        # debug
-        #self.sudoku_grid.set_grid(self.grid[-7:] + self.grid[:-7])
-        completeGrid = self.generate_seed()
-        grid = self.generate_grid(completeGrid, nnz)
-        self.sudoku_grid.grid = grid
+        complete_grid = self.generate_full_grid()
+        half_grid = self.generate_half_grid(complete_grid, nnz)
+
+        self.sudoku_grid.set_grid(half_grid)
         self.load_current_grid()
 
     def risolve_sudoku(self):
-        if self.sudoku_grid.full_cells_count == 81:
+        if self.sudoku_grid.full_cells_count_current_grid == 81:
             return messagebox.showerror('Errore','Il sudoku è già stato risolto!')
-        self.gurobi_control.set_vars(self.sudoku_grid.grid)
         try:
-            grid_sol = self.gurobi_control.resolve_grid()
+            grid_sol = self.gurobi_control.resolve_grid_from_str(self.sudoku_grid.grid)
         except gurobi.GurobiError:
             return messagebox.showerror('Errore', 'Il sudoku non ha soluzione!')
+
         self.sudoku_grid.set_grid(grid_sol)
         self.load_current_grid(first_load=False)
 
-    def generate_seed(self):
+    def generate_full_grid(self):
         numberList = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         random.seed()
         random.shuffle(numberList)
         seed = '0' * 81
-        #seed = list(seed)
-        tempNumeber = numberList;
+        # fissiamo i quattro angoli
         for row in [0, 8]:
             for col in [0, 8]:
-                element = random.choice(tempNumeber)
-                seed = seed[:row * 9 + col] + str(element) + seed[row * 9 + col + 1:]
-                tempNumeber.remove(element)
-
+                element = random.choice(numberList)
+                seed = seed[:row*9 + col] + str(element) + seed[row*9 + col + 1:]
+                numberList.remove(element)
+        # fissiamo i rimanenti numeri
         for element in numberList:
-            row = random.randint(1, 7)
-            col = random.randint(1, 7)
+            row = random.randint(1,7)
+            col = random.randint(1,7)
             seed = seed[:row*9+col] + str(element) + seed[row*9+col + 1:]
-        print("Nuovo seed" + seed)
-        self.gurobi_control.set_vars(seed)
-        completeGrid = self.gurobi_control.resolve_grid()
-        self.sudoku_grid.set_grid(completeGrid)
-        return completeGrid
+        # ritorniamo la stringa soluzione di gurobi
+        return self.gurobi_control.resolve_grid_from_str(grid=seed)
 
-    def generate_grid(self, completeGrid, nnz) :
-        while( self.sudoku_grid.full_cells_count > nnz ):
-            row = random.randint(0, 8)
-            col = random.randint(0, 8)
-            oldElement = completeGrid[row*9+col]
-            completeGrid = completeGrid[:row * 9 + col] + "0" + completeGrid[row * 9 + col + 1:]
-            self.sudoku_grid.grid = completeGrid
-
-#            self.gurobi_control.set_vars(completeGrid)
-
-            try :
-                self.gurobi_control.resolve_grid()
+    def generate_half_grid(self, complete_grid, nnz):
+        # copia la griglia e lavora su di essa
+        half_grid = complete_grid
+        # ottieni gli indici delle celle piene
+        idxs_full_cells = self.sudoku_grid.full_cells_list(half_grid)
+        # mischia questi indici
+        random.shuffle(idxs_full_cells)
+        # itera fin quando non raggiungi il nnz desiderato
+        while self.sudoku_grid.full_cells_count(half_grid) > nnz:
+            pos = random.choice(idxs_full_cells)
+            # rimuovo la posizione sia se metto '0' (vuota)
+            # sia se non posso rimuoverla a causa di GurobiError
+            idxs_full_cells.remove(pos)
+            # salvo l'elem corrente in caso di eccezione
+            old_elem = half_grid[pos]
+            # rimuovo l'elem dalla griglia
+            half_grid = half_grid[:pos] + '0' + half_grid[pos+1:]
+            try:
+                self.gurobi_control.resolve_grid_from_str(half_grid)
             except gurobi.GurobiError:
-                completeGrid = completeGrid[:row * 9 + col] + str(oldElement) + completeGrid[row * 9 + col + 1:]
-
-        return completeGrid
-
-    # TODO: CONTROLLARE DEPRECATO
-    # Stato: deprecato
-    # ---------
-    # Motivazione:
-    # Non serve cancellare la griglia se non è possibile per l'utente
-    # inserire caratteri nelle celle.
-    # A meno di non voler creare proprio un gioco Sudoku con inserimento
-    # e validazione, ma credo che esuli dalla specifica.
-    # def reset_sudoku(self):
-    #    if messagebox.askokcancel('Reset', 'Vuoi resettare il puzzle?'):
-    #        new_grid = ''
-    #        for c in self.view_manager.sudoku_frame.cells:
-    #            if not c.is_static:
-    #                c.clear_value()
-    #                new_grid += '.'
-    #            else:
-    #                new_grid += self.sudoku_grid.grid[c.row*9 + c.column]
-    #        self.sudoku_grid.grid = new_grid
-    #        self.load_current_grid()
+                half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]
+        return half_grid
