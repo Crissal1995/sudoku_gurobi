@@ -39,7 +39,7 @@ class Controller:
     def risolve_sudoku(self):
         # controlla se il sudoku non è stato già risolto
         if self.sudoku_grid.full_cells_count_current_grid == 81:
-            return self.view_manager.display_error('Il sudoku è stato già risolto!')
+            return self.view_manager.display_warning('Il sudoku è stato già risolto!')
         # prova a risolvere il sudoku corrente
         try: grid_sol = self.gurobi_control.resolve_grid(self.sudoku_grid.grid)
         # se non è possibile c'è un errore
@@ -64,10 +64,9 @@ class Controller:
             for col in [0, 8]:
                 pos = row*9 + col
                 element = random.choice(digits_list)
-                seed = seed[:pos] + str(element) + seed[pos+1:]
                 digits_list.remove(element)
-        # fissiamo i rimanenti numeri della lista
-        # nel resto della matrice
+                seed = seed[:pos] + str(element) + seed[pos+1:]
+        # fissiamo i rimanenti numeri della lista nel resto della matrice
         for element in digits_list:
             row = random.randint(1,7)
             col = random.randint(1,7)
@@ -85,8 +84,12 @@ class Controller:
         idxs_full_cells = self.sudoku_grid.full_cells_list(half_grid)
         # mischia questi indici
         random.shuffle(idxs_full_cells)
+        # totale delle celle da cancellare
+        cells_to_delete = 81 - nnz
+        # mostra la progressbar inizialmente vuota
+        self.view_manager.display_progressbar(max_value=cells_to_delete)
         # itera fin quando non raggiungi il nnz desiderato
-        while self.sudoku_grid.full_cells_count(half_grid) > nnz:
+        while cells_to_delete > 0:
             pos = random.choice(idxs_full_cells)
             # rimuovo la posizione sia se metto '0' (vuota)
             # sia se non posso rimuoverla a causa di GurobiError
@@ -96,8 +99,13 @@ class Controller:
             # rimuovo l'elem dalla griglia
             half_grid = half_grid[:pos] + '0' + half_grid[pos+1:]
             # controllo se è possibile risolvere la griglia
-            try: self.gurobi_control.resolve_grid(half_grid)
+            try:
+                self.gurobi_control.resolve_grid(half_grid)
+                # se sono qui, posso aggiornare contatore e progressbar
+                cells_to_delete -= 1
+                self.view_manager.increment_progressbar()
             # se non è possibile, ripristino l'elemento salvato
             except gurobi.GurobiError:
                 half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]
+        self.view_manager.remove_progressbar()
         return half_grid

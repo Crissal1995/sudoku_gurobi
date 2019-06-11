@@ -43,6 +43,10 @@ class ViewManager:
                                      command=controller.risolve_sudoku)
         self.risolve_button.grid(row=0, column=1, sticky=(W, E))
 
+        # progressbar per il caricamento in fase di generazione
+        self.progress_bar = Progressbar(self.nnz_frame, mode = 'determinate',
+                                        orient = HORIZONTAL, length = 200)
+
     def get_choice(self):
         return self.nnz.get()
 
@@ -56,8 +60,31 @@ class ViewManager:
     def edit_label(self, _):
         self.nnz_label.configure(text=f'Numero di celle piene: {self.get_choice()}')
 
-    def display_warning(self, message: str):
+    @staticmethod
+    def display_warning(message: str):
         return messagebox.showwarning('Attenzione', message)
-
-    def display_error(self, message: str):
+    @staticmethod
+    def display_error(message: str):
         return messagebox.showerror('Errore', message)
+
+    def display_progressbar(self, max_value: int):
+        # rimuovi dalla griglia gli elem nnz
+        self.nnz_label.grid_remove()
+        self.nnz_scale.grid_remove()
+        # setta il max
+        self.progress_bar['maximum'] = max_value
+        # rendi visibile la progress bar
+        self.progress_bar.grid(row=0, column=0, sticky=(W,E,N,S))
+
+    def remove_progressbar(self):
+        # rimuovi dal frame la progress bar
+        self.progress_bar.grid_remove()
+        # e rendi di nuovo visibili gli elem nnz
+        self.nnz_label.grid(row=0, column=0, sticky=(W,E))
+        self.nnz_scale.grid(row=1, column=0, sticky=(W,E))
+
+    def increment_progressbar(self):
+        # incrementa il valore della progress bar
+        self.progress_bar.step()
+        # e aggiorna gli elementi grafici
+        self.root.update()
