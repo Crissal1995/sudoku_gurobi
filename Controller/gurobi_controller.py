@@ -1,4 +1,5 @@
 from gurobipy import *
+import Controller.solver_error as error
 
 class GurobiController:
     # il costruttore crea modello e vincoli seguendo le regole del sudoku;
@@ -69,6 +70,9 @@ class GurobiController:
     # funzione per risolvere una griglia passata in input
     def resolve_grid(self, grid: str):
         self._set_vars(grid)
-        sol = self._resolve_grid()
+        try: 
+            sol = self._resolve_grid()
+        except GurobiError:
+            raise error.SolverError()
         self._reset_vars()
         return sol

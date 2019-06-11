@@ -38,13 +38,11 @@ class ViewManager:
 
         # bottone per generare un puzzle random
         self.gen_button = Button(self.buttons_frame, text='Genera puzzle',
-                                 #command=controller.generate_sudoku
                                  command = self.gen_button_click)
         self.gen_button.grid(row=0, column=0, sticky=(W, E))
 
         # bottone per risolvere il puzzle corrente
         self.risolve_button = Button(self.buttons_frame, text='Risolvi puzzle',
-                                     #command=controller.risolve_sudoku
                                      command = self.risolve_button_click)
         self.risolve_button.grid(row=0, column=1, sticky=(W, E))
 
@@ -108,4 +106,7 @@ class ViewManager:
         # incrementa il valore della progress bar
         self.progress_bar.step()
         # e aggiorna gli elementi grafici
+        self.root.update()
+
+    def update_graphics(self):
         self.root.update()
