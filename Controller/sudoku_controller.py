@@ -125,7 +125,7 @@ class Controller:
                     self.load_current_grid()
                     self.view_manager.update_graphics()
                     # e una sleep per farlo visualizzare
-                    time.sleep(self.time_after_generate)
+                    time.sleep(self.time_after_delete)
             # se non è possibile, ripristino l'elemento salvato
             except error.SolverError:
                 half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]

@@ -50,6 +50,25 @@ class ViewManager:
         self.progress_bar = Progressbar(self.nnz_frame, mode = 'determinate',
                                         orient = HORIZONTAL, length = 200)
 
+        self.time_frame = Frame(self.root, padding='5 5 5 5')
+        self.time_frame.pack(side=LEFT)
+
+        self.label_time_after_generate = Label(self.time_frame, text="Sleep dopo la generazione")
+        self.label_time_after_generate.grid(row = 0, column = 0,sticky= (NW))
+
+        self.time_after_generate = StringVar()
+        self.edit_time_after_generate = Entry(self.time_frame, textvariable = self.time_after_generate)
+        self.edit_time_after_generate.insert(END,"1")
+        self.edit_time_after_generate.grid(row = 0, column = 1,padx=10)
+
+        self.label_time_after_delete = Label(self.time_frame, text="Sleep per ogni cancellazione")
+        self.label_time_after_delete.grid(row = 1, column = 0)
+
+        self.time_after_delete = StringVar()
+        self.edit_time_after_delete =Entry(self.time_frame, textvariable = self.time_after_delete)
+        self.edit_time_after_delete.insert(END,"0.5")
+        self.edit_time_after_delete.grid(row = 1, column = 1,padx=10)
+
     def get_choice(self):
         return self.nnz.get()
 
@@ -72,11 +91,14 @@ class ViewManager:
 
     def gen_button_click(self):
         self.disable_buttons()
+        self.set_time_after_generate()
+        self.set_time_after_delete()
         self.controller.generate_sudoku()
         self.enable_buttons()
     
     def risolve_button_click(self):
         self.disable_buttons()
+
         self.controller.risolve_sudoku()
         self.enable_buttons()
 
@@ -110,3 +132,22 @@ class ViewManager:
 
     def update_graphics(self):
         self.root.update()
+
+    def set_time_after_generate(self):
+        try :
+            if int(self.time_after_generate.get()) >= 0:
+                self.controller.time_after_generate = int(self.time_after_generate.get())
+            else :
+                raise Exception
+        except Exception:
+            self.controller.time_after_generate = 1
+
+    def set_time_after_delete (self):
+        try :
+            if int(self.time_after_delete.get()) >= 0:
+                self.controller.time_after_delete = int(self.edit_time_after_delete.get())
+            else :
+                raise Exception
+        except Exception:
+            self.controller.time_after_delete = 0.5
+
