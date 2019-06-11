@@ -26,6 +26,7 @@ class Controller:
 
     def load_current_grid(self, first_load=True):
         self.view_manager.sudoku_frame.load_grid(self.sudoku_grid.grid, first_load)
+        self.view_manager.update_graphics()
 
     # Funzioni callback associate ai bottoni nella GUI
     def generate_sudoku(self):
@@ -39,7 +40,6 @@ class Controller:
             # imposta lo schema completo
             self.sudoku_grid.set_grid(complete_grid)
             self.load_current_grid()
-            self.view_manager.update_graphics()
             # e fai la sleep per un tempo fissato
             time.sleep(self.time_after_generate)
         # riduce il numero di elem fino ad avere nnz elementi
@@ -123,7 +123,6 @@ class Controller:
                     # facciamo update della grid per ogni elem cancellato
                     self.sudoku_grid.set_grid(half_grid)
                     self.load_current_grid()
-                    self.view_manager.update_graphics()
                     # e una sleep per farlo visualizzare
                     time.sleep(self.time_after_delete)
             # se non è possibile, ripristino l'elemento salvato
