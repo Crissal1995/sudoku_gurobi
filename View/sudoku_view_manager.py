@@ -6,6 +6,9 @@ from tkinter import messagebox
 
 class ViewManager:
     def __init__(self, controller: ctr.Controller):
+        ## ref
+        self.controller = controller
+
         ### inizializzazione gui
         self.root = Tk()
         self.root.title('GUS - Gurobi Sudoku')
@@ -18,7 +21,7 @@ class ViewManager:
 
         # label per indicare il num di caselle piene scelto
         self.nnz_label = Label(self.nnz_frame, text='Numero di celle piene: 17', justify=CENTER)
-        self.nnz_label.grid(row=0, column=0, sticky=(W, E))
+        self.nnz_label.grid(row=0, column=0)
 
         # variabile contenente il valore dello slider
         self.nnz = IntVar()
@@ -35,12 +38,14 @@ class ViewManager:
 
         # bottone per generare un puzzle random
         self.gen_button = Button(self.buttons_frame, text='Genera puzzle',
-                                 command=controller.generate_sudoku)
+                                 #command=controller.generate_sudoku
+                                 command = self.gen_button_click)
         self.gen_button.grid(row=0, column=0, sticky=(W, E))
 
         # bottone per risolvere il puzzle corrente
         self.risolve_button = Button(self.buttons_frame, text='Risolvi puzzle',
-                                     command=controller.risolve_sudoku)
+                                     #command=controller.risolve_sudoku
+                                     command = self.risolve_button_click)
         self.risolve_button.grid(row=0, column=1, sticky=(W, E))
 
         # progressbar per il caricamento in fase di generazione
@@ -67,21 +72,37 @@ class ViewManager:
     def display_error(message: str):
         return messagebox.showerror('Errore', message)
 
+    def gen_button_click(self):
+        self.disable_buttons()
+        self.controller.generate_sudoku()
+        self.enable_buttons()
+    
+    def risolve_button_click(self):
+        self.disable_buttons()
+        self.controller.risolve_sudoku()
+        self.enable_buttons()
+
+    def disable_buttons(self):
+        self.gen_button['state'] = DISABLED
+        self.risolve_button['state'] = DISABLED
+    
+    def enable_buttons(self):
+        self.gen_button['state'] = NORMAL
+        self.risolve_button['state'] = NORMAL
+
     def display_progressbar(self, max_value: int):
-        # rimuovi dalla griglia gli elem nnz
-        self.nnz_label.grid_remove()
+        self.progress_bar.grid(row=1, column=0)
+        # rimuovi dalla griglia lo scale nnz
         self.nnz_scale.grid_remove()
-        # setta il max
+        # setta il max della progressbar
         self.progress_bar['maximum'] = max_value
-        # rendi visibile la progress bar
-        self.progress_bar.grid(row=0, column=0, sticky=(W,E,N,S))
+        # e rendi visibile la progress bar
 
     def remove_progressbar(self):
         # rimuovi dal frame la progress bar
         self.progress_bar.grid_remove()
-        # e rendi di nuovo visibili gli elem nnz
-        self.nnz_label.grid(row=0, column=0, sticky=(W,E))
-        self.nnz_scale.grid(row=1, column=0, sticky=(W,E))
+        # e rendi di nuovo visibile lo scale nnz
+        self.nnz_scale.grid(row=1, column=0)
 
     def increment_progressbar(self):
         # incrementa il valore della progress bar
