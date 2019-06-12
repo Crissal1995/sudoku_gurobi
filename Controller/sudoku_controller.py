@@ -41,11 +41,12 @@ class Controller:
             # imposta lo schema completo
             self.load_grid(complete_grid)
             # e fai la sleep per un tempo fissato
+            # per mostrare a schermo la griglia completa
             time.sleep(self.view_manager.get_time_after_generate())
         # riduce il numero di elem fino ad avere nnz elementi
         # partendo dallo schema completo
         half_grid = self.generate_half_grid(complete_grid, nnz)
-        # setta la griglia nel model
+        # setta la griglia ridotta nel model
         self.load_grid(half_grid)
 
     def risolve_sudoku(self):
@@ -103,7 +104,9 @@ class Controller:
         time_to_sleep = self.view_manager.get_time_after_delete()
         # itera fin quando non raggiungi il nnz desiderato
         while cells_to_delete > 0:
-            pos = random.choice(idxs_full_cells)
+            # prendi l'ultima pos dell'array degli indici
+            # tanto già ho fatto lo shuffle randomico prima
+            pos = idxs_full_cells[-1]
             # rimuovo la posizione sia se metto '0' (vuota)
             # sia se non posso rimuoverla a causa di GurobiError
             idxs_full_cells.remove(pos)
@@ -113,8 +116,16 @@ class Controller:
             half_grid = half_grid[:pos] + '0' + half_grid[pos+1:]
             # controllo se è possibile risolvere la griglia
             try:
-                self.solver.resolve_grid(half_grid)
-                # se sono qui, posso aggiornare contatore e progressbar
+                # risolvi la griglia
+                solution_grid = self.solver.resolve_grid(half_grid)
+                # controlla se la sol trovata non coincide con quella precedente
+                if solution_grid != complete_grid:
+                    # se non coincide, allora ripristina l'elem
+                    half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]
+                    # e continua il ciclo con un altro elem da cancellare
+                    continue
+                # se sono qui, le griglie coincidono e quindi
+                # posso aggiornare contatore e progressbar
                 cells_to_delete -= 1
                 self.view_manager.increment_progressbar()
                 # se vogliamo fare la sleep
