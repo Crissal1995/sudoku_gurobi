@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter.ttk import *
-import Controller.sudoku_controller as ctr
 import View.sudoku_frame as model
 from tkinter import messagebox
 
@@ -8,8 +7,8 @@ class ViewManager:
     nnz_text_whenScale = 'Numero di celle piene desiderate: '
     nnz_text_whenProgress = 'Numero di celle piene: '
     nnz_cells_count = 81
-    def __init__(self, controller: ctr.Controller):
-        ## ref
+    def __init__(self, controller):
+        # ref a controller
         self.controller = controller
 
         ### inizializzazione gui
@@ -57,7 +56,8 @@ class ViewManager:
         self.time_frame.pack(side=LEFT)
 
         # label per la sleep dopo la generazione della griglia completa
-        self.time_after_generate_label = Label(self.time_frame, text="Sleep dopo la generazione")
+        self.time_after_generate_label = Label(self.time_frame,
+                                               text="Sleep dopo la generazione della griglia [ms]")
         self.time_after_generate_label.grid(row = 0, column = 0, sticky=NW)
 
         # entry per la sleep
@@ -65,11 +65,12 @@ class ViewManager:
         self.time_after_generate_entry = Entry(self.time_frame,
                                                textvariable = self.time_after_generate_stringvar)
         # campo di default per l'entry
-        self.time_after_generate_entry.insert(END, "1")
+        self.time_after_generate_entry.insert(END, "1000")
         self.time_after_generate_entry.grid(row = 0, column = 1, padx=10)
 
         # label per la sleep dopo ogni cancellazione di cella
-        self.time_after_delete_label = Label(self.time_frame, text="Sleep per ogni cancellazione")
+        self.time_after_delete_label = Label(self.time_frame,
+                                             text="Sleep per ogni cancellazione di cella [ms]")
         self.time_after_delete_label.grid(row = 1, column = 0, sticky=NW)
         # stringvar per mantenere il valore
         self.time_after_delete_stringvar = StringVar()
@@ -77,7 +78,7 @@ class ViewManager:
         self.time_after_delete_entry = Entry(self.time_frame,
                                              textvariable = self.time_after_delete_stringvar)
         # valore di default
-        self.time_after_delete_entry.insert(END, "0.5")
+        self.time_after_delete_entry.insert(END, "500")
         self.time_after_delete_entry.grid(row = 1, column = 1, padx=10)
 
     def get_choice(self):
@@ -103,9 +104,6 @@ class ViewManager:
     def gen_button_click(self):
         # blocca gli input
         self.disable_inputs()
-        # setta i valori di time nel controller
-        self.set_time_after_generate()
-        self.set_time_after_delete()
         # genera il sudoku
         self.controller.generate_sudoku()
         # sblocca gli input
@@ -141,16 +139,6 @@ class ViewManager:
         # update grafico
         self.update_graphics()
 
-    def remove_progressbar(self):
-        # rimuovi dal frame la progress bar
-        self.progress_bar.grid_remove()
-        # rendi di nuovo visibile lo scale nnz
-        self.nnz_scale.grid(row=1, column=0)
-        # ripristina la nnz label originale
-        self.nnz_label['text'] = self.nnz_text_whenScale + str(self.get_choice())
-        # update grafico
-        self.update_graphics()
-
     def increment_progressbar(self):
         # incrementa il valore della progress bar
         self.progress_bar.step()
@@ -161,22 +149,33 @@ class ViewManager:
         # aggiorna gli elementi grafici
         self.update_graphics()
 
+    def remove_progressbar(self):
+        # rimuovi dal frame la progress bar
+        self.progress_bar.grid_remove()
+        # rendi di nuovo visibile lo scale nnz
+        self.nnz_scale.grid(row=1, column=0)
+        # ripristina la nnz label originale
+        self.nnz_label['text'] = self.nnz_text_whenScale + str(self.get_choice())
+        # update grafico
+        self.update_graphics()
+
     def update_graphics(self):
         self.root.update()
 
-    def set_time_after_generate(self):
-        default_value = 1
+    def get_time_after_generate(self):
+        default_value = 1000
         try :
-            value = int(self.time_after_generate_stringvar.get())
-            self.controller.time_after_generate = value if value >= 0 else default_value
+            value = float(self.time_after_generate_stringvar.get())
+            value = value if value >= 0 else default_value
         except ValueError:
-            self.controller.time_after_generate = default_value
+            value = default_value
+        return value / 1000 # ms -> s
 
-    def set_time_after_delete (self):
-        default_value = 0.5
+    def get_time_after_delete (self):
+        default_value = 500
         try:
-            value = int(self.time_after_delete_stringvar.get())
-            self.controller.time_after_delete = value if value >= 0 else default_value
+            value = float(self.time_after_delete_stringvar.get())
+            value = value if value >= 0 else default_value
         except ValueError:
-            self.controller.time_after_delete = default_value
-
+            value = default_value
+        return value / 1000 # ms -> s

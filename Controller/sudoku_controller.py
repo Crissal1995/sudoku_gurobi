@@ -1,19 +1,16 @@
 import Controller.gurobi_controller as gurobi
 import Controller.solver_error as error 
 import Model.sudoku_grid as model
+import View.sudoku_view_manager as view
 import random
 import time
 
 class Controller:
-    time_after_generate = 1
-    time_after_delete = 0.5
     should_sleep_after_gen = True
 
     def __init__(self):
         # instanziamo il singleton del model
         self.sudoku_grid = model.SudokuGrid()
-        # dobbiamo importare dentro l'init per evitare un import circolare
-        import View.sudoku_view_manager as view
         # creiamo la gui del programma
         self.view_manager = view.ViewManager(self)
         # creazione controller Gurobi e relativo modello
@@ -25,7 +22,11 @@ class Controller:
         self.view_manager.start_app()
 
     def load_current_grid(self, first_load=True):
-        self.view_manager.sudoku_frame.load_grid(self.sudoku_grid.grid, first_load)
+        self.load_grid(self.sudoku_grid.grid, first_load)
+
+    def load_grid(self, grid: str, first_load = True):
+        self.sudoku_grid.set_grid(grid)
+        self.view_manager.sudoku_frame.load_grid(grid, first_load)
         self.view_manager.update_graphics()
 
     # Funzioni callback associate ai bottoni nella GUI
@@ -38,17 +39,14 @@ class Controller:
         # se abbiamo impostato lo sleep per visualizzare l'eliminazione
         if self.should_sleep_after_gen:
             # imposta lo schema completo
-            self.sudoku_grid.set_grid(complete_grid)
-            self.load_current_grid()
+            self.load_grid(complete_grid)
             # e fai la sleep per un tempo fissato
-            time.sleep(self.time_after_generate)
+            time.sleep(self.view_manager.get_time_after_generate())
         # riduce il numero di elem fino ad avere nnz elementi
         # partendo dallo schema completo
         half_grid = self.generate_half_grid(complete_grid, nnz)
         # setta la griglia nel model
-        self.sudoku_grid.set_grid(half_grid)
-        # carica a schermo la nuova griglia
-        self.load_current_grid()
+        self.load_grid(half_grid)
 
     def risolve_sudoku(self):
         # controlla se il sudoku non è stato già risolto
@@ -61,9 +59,7 @@ class Controller:
             return self.view_manager.display_error('Il sudoku non ha soluzione!')
         # altrimenti prendi la soluzione del solver
         # settala come griglia del model
-        self.sudoku_grid.set_grid(grid_sol)
-        # e ricarica la griglia
-        self.load_current_grid(first_load=False)
+        self.load_grid(grid_sol,first_load=False)
 
     def generate_full_grid(self):
         # creiamo una lista di 9 numeri
@@ -95,13 +91,16 @@ class Controller:
         # copia la griglia e lavora su di essa
         half_grid = complete_grid
         # ottieni gli indici delle celle piene
-        idxs_full_cells = self.sudoku_grid.full_cells_list(half_grid)
+        # all'inizio sono tutte le celle
+        idxs_full_cells = list(range(81))
         # mischia questi indici
         random.shuffle(idxs_full_cells)
         # totale delle celle da cancellare
         cells_to_delete = 81 - nnz
         # mostra la progressbar inizialmente vuota
         self.view_manager.display_progressbar(max_value=cells_to_delete)
+        # memorizza il timetosleep desiderato
+        time_to_sleep = self.view_manager.get_time_after_delete()
         # itera fin quando non raggiungi il nnz desiderato
         while cells_to_delete > 0:
             pos = random.choice(idxs_full_cells)
@@ -121,10 +120,9 @@ class Controller:
                 # se vogliamo fare la sleep
                 if self.should_sleep_after_gen:
                     # facciamo update della grid per ogni elem cancellato
-                    self.sudoku_grid.set_grid(half_grid)
-                    self.load_current_grid()
+                    self.load_grid(half_grid)
                     # e una sleep per farlo visualizzare
-                    time.sleep(self.time_after_delete)
+                    time.sleep(time_to_sleep)
             # se non è possibile, ripristino l'elemento salvato
             except error.SolverError:
                 half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]
