@@ -3,22 +3,24 @@ from tkinter.ttk import *
 import View.sudoku_frame as model
 from tkinter import messagebox
 
+
 class ViewManager:
     nnz_text_whenScale = 'Numero di celle piene desiderate: '
     nnz_text_whenProgress = 'Numero di celle piene: '
     nnz_cells_count = 81
+
     def __init__(self, controller):
         # ref a controller
         self.controller = controller
 
-        ### inizializzazione gui
+        # inizializzazione gui
         self.root = Tk()
         self.root.title('GUS - Gurobi Sudoku')
         # creiamo la griglia del sudoku
         self.sudoku_frame = model.SudokuFrame(self.root)
 
-        ### frame per contenere label e slider delle celle piene
-        self.nnz_frame = Frame(self.root, padding = '5 5 5 5')
+        # frame per contenere label e slider delle celle piene
+        self.nnz_frame = Frame(self.root, padding='5 5 5 5')
         self.nnz_frame.pack()
 
         # label per indicare il num di caselle piene scelto
@@ -33,53 +35,53 @@ class ViewManager:
                                variable=self.nnz_intvar, command=self.edit_label)
         self.nnz_scale.grid(row=1, column=0, sticky=EW)
 
-        ### frame per contenere i bottoni
+        # frame per contenere i bottoni
         self.buttons_frame = Frame(self.root, padding='5 5 5 5')
         self.buttons_frame.pack()
 
         # bottone per generare un puzzle random
         self.gen_button = Button(self.buttons_frame, text='Genera puzzle',
-                                 command = self.gen_button_click)
+                                 command=self.gen_button_click)
         self.gen_button.grid(row=0, column=0, sticky=EW)
 
         # bottone per risolvere il puzzle corrente
         self.risolve_button = Button(self.buttons_frame, text='Risolvi puzzle',
-                                     command = self.risolve_button_click)
+                                     command=self.risolve_button_click)
         self.risolve_button.grid(row=0, column=1, sticky=EW)
 
         # progressbar per il caricamento in fase di generazione
-        self.progress_bar = Progressbar(self.nnz_frame, mode = 'determinate',
-                                        orient = HORIZONTAL, length = 200)
+        self.progress_bar = Progressbar(self.nnz_frame, mode='determinate',
+                                        orient=HORIZONTAL, length=200)
 
-        ## frame per contenere labels e entry per i time di attesa
+        # frame per contenere labels e entry per i time di attesa
         self.time_frame = Frame(self.root, padding='5 5 5 5')
         self.time_frame.pack(side=LEFT)
 
         # label per la sleep dopo la generazione della griglia completa
         self.time_after_generate_label = Label(self.time_frame,
                                                text="Sleep dopo la generazione della griglia [ms]")
-        self.time_after_generate_label.grid(row = 0, column = 0, sticky=NW)
+        self.time_after_generate_label.grid(row=0, column=0, sticky=NW)
 
         # entry per la sleep
         self.time_after_generate_stringvar = StringVar()
         self.time_after_generate_entry = Entry(self.time_frame,
-                                               textvariable = self.time_after_generate_stringvar)
+                                               textvariable=self.time_after_generate_stringvar)
         # campo di default per l'entry
         self.time_after_generate_entry.insert(END, "1000")
-        self.time_after_generate_entry.grid(row = 0, column = 1, padx=10)
+        self.time_after_generate_entry.grid(row=0, column=1, padx=10)
 
         # label per la sleep dopo ogni cancellazione di cella
         self.time_after_delete_label = Label(self.time_frame,
                                              text="Sleep per ogni cancellazione di cella [ms]")
-        self.time_after_delete_label.grid(row = 1, column = 0, sticky=NW)
+        self.time_after_delete_label.grid(row=1, column=0, sticky=NW)
         # stringvar per mantenere il valore
         self.time_after_delete_stringvar = StringVar()
         # entry per modificare il time to sleep
         self.time_after_delete_entry = Entry(self.time_frame,
-                                             textvariable = self.time_after_delete_stringvar)
+                                             textvariable=self.time_after_delete_stringvar)
         # valore di default
         self.time_after_delete_entry.insert(END, "500")
-        self.time_after_delete_entry.grid(row = 1, column = 1, padx=10)
+        self.time_after_delete_entry.grid(row=1, column=1, padx=10)
 
     def get_choice(self):
         return self.nnz_intvar.get()
@@ -97,6 +99,7 @@ class ViewManager:
     @staticmethod
     def display_warning(message: str):
         return messagebox.showwarning('Attenzione', message)
+
     @staticmethod
     def display_error(message: str):
         return messagebox.showerror('Errore', message)
@@ -164,18 +167,18 @@ class ViewManager:
 
     def get_time_after_generate(self):
         default_value = 1000
-        try :
+        try:
             value = float(self.time_after_generate_stringvar.get())
             value = value if value >= 0 else default_value
         except ValueError:
             value = default_value
-        return value / 1000 # ms -> s
+        return value / 1000  # ms -> s
 
-    def get_time_after_delete (self):
+    def get_time_after_delete(self):
         default_value = 500
         try:
             value = float(self.time_after_delete_stringvar.get())
             value = value if value >= 0 else default_value
         except ValueError:
             value = default_value
-        return value / 1000 # ms -> s
+        return value / 1000  # ms -> s

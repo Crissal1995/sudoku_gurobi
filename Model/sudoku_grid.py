@@ -2,6 +2,7 @@
 # per gestire un'unica griglia sudoku
 import Controller.gurobi_controller as gurobi
 
+
 class SudokuGrid:
     default_grid = '0'*81
     grid = ''
@@ -10,6 +11,7 @@ class SudokuGrid:
     valid_chars = digits + delimiters
 
     __instance = None
+
     # singleton pattern
     def __new__(cls, grid: str = default_grid):
         if SudokuGrid.__instance is None:
@@ -34,4 +36,4 @@ class SudokuGrid:
 
     @staticmethod
     def full_cells_list(grid: str):
-        return [idx for idx,value in enumerate(grid) if value in SudokuGrid.digits]
+        return [idx for idx, value in enumerate(grid) if value in SudokuGrid.digits]

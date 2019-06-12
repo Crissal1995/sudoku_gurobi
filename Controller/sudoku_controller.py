@@ -5,6 +5,7 @@ import View.sudoku_view_manager as view
 import random
 import time
 
+
 class Controller:
     should_sleep_after_gen = True
 
@@ -24,7 +25,7 @@ class Controller:
     def load_current_grid(self, first_load=True):
         self.load_grid(self.sudoku_grid.grid, first_load)
 
-    def load_grid(self, grid: str, first_load = True):
+    def load_grid(self, grid: str, first_load=True):
         self.sudoku_grid.set_grid(grid)
         self.view_manager.sudoku_frame.load_grid(grid, first_load)
         self.view_manager.update_graphics()
@@ -54,17 +55,18 @@ class Controller:
         if self.sudoku_grid.full_cells_count_current_grid == 81:
             return self.view_manager.display_warning('Il sudoku è stato già risolto!')
         # prova a risolvere il sudoku corrente
-        try: grid_sol = self.solver.resolve_grid(self.sudoku_grid.grid)
+        try:
+            grid_sol = self.solver.resolve_grid(self.sudoku_grid.grid)
         # se non è possibile c'è un errore
         except error.SolverError:
             return self.view_manager.display_error('Il sudoku non ha soluzione!')
         # altrimenti prendi la soluzione del solver
         # settala come griglia del model
-        self.load_grid(grid_sol,first_load=False)
+        self.load_grid(grid_sol, first_load=False)
 
     def generate_full_grid(self):
         # creiamo una lista di 9 numeri
-        digits_list = list(range(1,10))
+        digits_list = list(range(1, 10))
         # randomizziamo ogni volta il seme
         random.seed()
         # ordiniamo in un ordine sempre differente
@@ -79,8 +81,8 @@ class Controller:
                 seed = seed[:pos] + str(element) + seed[pos+1:]
         # fissiamo i rimanenti numeri della lista nel resto della matrice
         for element in digits_list:
-            row = random.randint(1,7)
-            col = random.randint(1,7)
+            row = random.randint(1, 7)
+            col = random.randint(1, 7)
             pos = row*9 + col
             seed = seed[:pos] + str(element) + seed[pos+1:]
         # ritorniamo la stringa soluzione di gurobi
