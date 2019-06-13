@@ -90,4 +90,4 @@ class SudokuFrame(Frame):
         for i in range(81):
             self.cells[i].clear_value()
             self.cells[i].make_nonstatic()
-        self.sudoku_grid.set_grid(''*81)
+        self.sudoku_grid.set_grid('0'*81)
