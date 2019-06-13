@@ -71,8 +71,6 @@ class SudokuFrame(Frame):
         return cells
 
     def load_grid(self, grid: str, first_load=True):
-        if grid == '':
-            grid = '' * 81
         assert(self.sudoku_grid.is_valid_grid())
         for i in range(81):
             if first_load:
