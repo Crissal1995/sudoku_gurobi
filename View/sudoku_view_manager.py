@@ -103,6 +103,10 @@ class ViewManager:
     @staticmethod
     def display_error(message: str):
         return messagebox.showerror('Errore', message)
+    
+    @staticmethod
+    def display_choice(message: str):
+        return messagebox.askokcancel('Scelta', message)
 
     def gen_button_click(self):
         # blocca gli input

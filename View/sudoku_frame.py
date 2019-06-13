@@ -71,6 +71,8 @@ class SudokuFrame(Frame):
         return cells
 
     def load_grid(self, grid: str, first_load=True):
+        if grid == '':
+            grid = '' * 81
         assert(self.sudoku_grid.is_valid_grid())
         for i in range(81):
             if first_load:
@@ -83,3 +85,9 @@ class SudokuFrame(Frame):
                 self.cells[i].make_static()
         # cambiare la griglia inserita
         self.sudoku_grid.set_grid(grid)
+
+    def reset_grid(self):
+        for i in range(81):
+            self.cells[i].clear_value()
+            self.cells[i].make_nonstatic()
+        self.sudoku_grid.set_grid(''*81)

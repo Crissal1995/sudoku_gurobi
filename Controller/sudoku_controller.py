@@ -29,6 +29,9 @@ class Controller:
         self.sudoku_grid.set_grid(grid)
         self.view_manager.sudoku_frame.load_grid(grid, first_load)
         self.view_manager.update_graphics()
+    
+    def reset_grid(self):
+        self.view_manager.sudoku_frame.reset_grid()
 
     # Funzioni callback associate ai bottoni nella GUI
     def generate_sudoku(self):
@@ -46,9 +49,11 @@ class Controller:
             time.sleep(self.view_manager.get_time_after_generate())
         # riduce il numero di elem fino ad avere nnz elementi
         # partendo dallo schema completo
-        half_grid = self.generate_half_grid(complete_grid, nnz)
-        # setta la griglia ridotta nel model
-        self.load_grid(half_grid)
+        try:
+            half_grid = self.generate_half_grid(complete_grid, nnz)
+            self.load_grid(half_grid)
+        except error.UserResettedSudoku:
+            self.reset_grid()
 
     def risolve_sudoku(self):
         # controlla se il sudoku non è stato già risolto
@@ -108,7 +113,22 @@ class Controller:
         while cells_to_delete > 0:
             # prendi l'ultima pos dell'array degli indici
             # tanto già ho fatto lo shuffle randomico prima
-            pos = idxs_full_cells[-1]
+            try:
+                pos = idxs_full_cells[-1]
+            except IndexError:  # se ho saturato l'array
+                if self.view_manager.display_choice('Non è possibile generare una griglia con questa cancellazione. Dare OK per riprovare.'):
+                    # se devi mostrare lo schema
+                    if self.should_sleep_after_gen:
+                        # mostralo e fai la sleep
+                        self.load_grid(complete_grid)
+                        time.sleep(self.view_manager.get_time_after_generate())
+                    # dopodiché richiama la funzione
+                    # cambiando prima il seme
+                    random.seed()
+                    return self.generate_half_grid(complete_grid, nnz)
+                else:
+                    self.view_manager.remove_progressbar()
+                    raise error.UserResettedSudoku
             # rimuovo la posizione sia se metto '0' (vuota)
             # sia se non posso rimuoverla a causa di GurobiError
             idxs_full_cells.remove(pos)
