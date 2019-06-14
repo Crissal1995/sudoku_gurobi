@@ -54,34 +54,47 @@ class ViewManager:
                                         orient=HORIZONTAL, length=200)
 
         # frame per contenere labels e entry per i time di attesa
-        self.time_frame = Frame(self.root, padding='5 5 5 5')
-        self.time_frame.pack(side=LEFT)
+        self.sleep_frame = Frame(self.root, padding='5 5 5 5')
+        self.sleep_frame.pack(side=LEFT)
+
+        # label per richiedere se abilitare la sleep
+        self.should_sleep_label = Label(self.sleep_frame,
+                                        text='Abilita la sleep dopo generazione e cancellazione')
+        self.should_sleep_label.grid(row=0, column=0, sticky=NW)
+
+        # checkbutton per abilitare o no la sleep
+        self.should_sleep_boolvar = BooleanVar()
+        self.should_sleep_boolvar.set(True)
+        self.should_sleep_checkbutton = Checkbutton(self.sleep_frame,
+                                                    variable=self.should_sleep_boolvar,
+                                                    command=self.checkbutton_clicked)
+        self.should_sleep_checkbutton.grid(row=0, column=1, sticky=N)
 
         # label per la sleep dopo la generazione della griglia completa
-        self.time_after_generate_label = Label(self.time_frame,
-                                               text="Sleep dopo la generazione della griglia [ms]")
-        self.time_after_generate_label.grid(row=0, column=0, sticky=NW)
+        self.timetosleep_after_generate_label = Label(self.sleep_frame,
+                                                      text="Sleep dopo la generazione della griglia [ms]")
+        self.timetosleep_after_generate_label.grid(row=1, column=0, sticky=NW)
 
         # entry per la sleep
-        self.time_after_generate_stringvar = StringVar()
-        self.time_after_generate_entry = Entry(self.time_frame,
-                                               textvariable=self.time_after_generate_stringvar)
+        self.timetosleep_after_generate_stringvar = StringVar()
+        self.timetosleep_after_generate_entry = Entry(self.sleep_frame,
+                                                      textvariable=self.timetosleep_after_generate_stringvar)
         # campo di default per l'entry
-        self.time_after_generate_entry.insert(END, "1000")
-        self.time_after_generate_entry.grid(row=0, column=1, padx=10)
+        self.timetosleep_after_generate_entry.insert(END, "1000")
+        self.timetosleep_after_generate_entry.grid(row=1, column=1, padx=10)
 
         # label per la sleep dopo ogni cancellazione di cella
-        self.time_after_delete_label = Label(self.time_frame,
-                                             text="Sleep per ogni cancellazione di cella [ms]")
-        self.time_after_delete_label.grid(row=1, column=0, sticky=NW)
+        self.timetosleep_after_delete_label = Label(self.sleep_frame,
+                                                    text="Sleep per ogni cancellazione di cella [ms]")
+        self.timetosleep_after_delete_label.grid(row=2, column=0, sticky=NW)
         # stringvar per mantenere il valore
-        self.time_after_delete_stringvar = StringVar()
+        self.timetosleep_after_delete_stringvar = StringVar()
         # entry per modificare il time to sleep
-        self.time_after_delete_entry = Entry(self.time_frame,
-                                             textvariable=self.time_after_delete_stringvar)
+        self.timetosleep_after_delete_entry = Entry(self.sleep_frame,
+                                                    textvariable=self.timetosleep_after_delete_stringvar)
         # valore di default
-        self.time_after_delete_entry.insert(END, "500")
-        self.time_after_delete_entry.grid(row=1, column=1, padx=10)
+        self.timetosleep_after_delete_entry.insert(END, "500")
+        self.timetosleep_after_delete_entry.grid(row=2, column=1, padx=10)
 
     def get_choice(self):
         return self.nnz_intvar.get()
@@ -95,6 +108,17 @@ class ViewManager:
     # funzione chiamata ogni volta che lo scale si ferma
     def edit_label(self, _):
         self.nnz_label.configure(text=self.nnz_text_whenScale + f'{self.get_choice()}')
+
+    # funzione chiamata ad ogni cambio di checkbutton
+    def checkbutton_clicked(self):
+        if self.is_sleep_enabled():
+            self.enable_timetosleep_entries()
+        else:
+            self.disable_timetosleep_entries()
+
+    # funzione per mascherare come ottenere lo stato
+    def is_sleep_enabled(self):
+        return self.should_sleep_boolvar.get()
 
     @staticmethod
     def display_warning(message: str):
@@ -124,14 +148,20 @@ class ViewManager:
     def disable_inputs(self):
         self.gen_button['state'] = DISABLED
         self.risolve_button['state'] = DISABLED
-        self.time_after_delete_entry['state'] = DISABLED
-        self.time_after_generate_entry['state'] = DISABLED
+        self.disable_timetosleep_entries()
     
     def enable_inputs(self):
         self.gen_button['state'] = NORMAL
         self.risolve_button['state'] = NORMAL
-        self.time_after_delete_entry['state'] = NORMAL
-        self.time_after_generate_entry['state'] = NORMAL
+        self.enable_timetosleep_entries()
+
+    def disable_timetosleep_entries(self):
+        self.timetosleep_after_delete_entry['state'] = DISABLED
+        self.timetosleep_after_generate_entry['state'] = DISABLED
+
+    def enable_timetosleep_entries(self):
+        self.timetosleep_after_delete_entry['state'] = NORMAL
+        self.timetosleep_after_generate_entry['state'] = NORMAL
 
     def display_progressbar(self, max_value: int):
         # rendi visibile la progress bar
@@ -145,6 +175,9 @@ class ViewManager:
         self.nnz_label['text'] = self.nnz_text_whenProgress + str(self.nnz_cells_count)
         # update grafico
         self.update_graphics()
+
+    def set_progressbar_value(self, value):
+        self.progress_bar['value'] = value
 
     def increment_progressbar(self):
         # incrementa il valore della progress bar
@@ -169,19 +202,19 @@ class ViewManager:
     def update_graphics(self):
         self.root.update()
 
-    def get_time_after_generate(self):
+    def get_timetosleep_after_generate(self):
         default_value = 1000
         try:
-            value = float(self.time_after_generate_stringvar.get())
+            value = float(self.timetosleep_after_generate_stringvar.get())
             value = value if value >= 0 else default_value
         except ValueError:
             value = default_value
         return value / 1000  # ms -> s
 
-    def get_time_after_delete(self):
+    def get_timetosleep_after_delete(self):
         default_value = 500
         try:
-            value = float(self.time_after_delete_stringvar.get())
+            value = float(self.timetosleep_after_delete_stringvar.get())
             value = value if value >= 0 else default_value
         except ValueError:
             value = default_value

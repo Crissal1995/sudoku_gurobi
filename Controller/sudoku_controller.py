@@ -8,6 +8,8 @@ import time
 
 class Controller:
     should_sleep_after_gen = True
+    timetosleep_after_generate = 1
+    timetosleep_after_delete = 0.5
 
     def __init__(self):
         # instanziamo il singleton del model
@@ -37,7 +39,12 @@ class Controller:
     def generate_sudoku(self):
         # ottiene il valore dello slider
         nnz = self.view_manager.get_choice()
+        # si assicura che sia valido
         assert(17 <= nnz <= 81)
+        # cambia i valori degli sleep
+        self.should_sleep_after_gen = self.view_manager.is_sleep_enabled()
+        self.timetosleep_after_generate = self.view_manager.get_timetosleep_after_generate()
+        self.timetosleep_after_delete = self.view_manager.get_timetosleep_after_delete()
         # ottiene uno schema completo
         complete_grid = self.generate_full_grid()
         # se abbiamo impostato lo sleep per visualizzare l'eliminazione
@@ -46,12 +53,11 @@ class Controller:
             self.load_grid(complete_grid)
             # e fai la sleep per un tempo fissato
             # per mostrare a schermo la griglia completa
-            time.sleep(self.view_manager.get_time_after_generate())
+            time.sleep(self.timetosleep_after_generate)
         # riduce il numero di elem fino ad avere nnz elementi
         # partendo dallo schema completo
         try:
             half_grid = self.generate_half_grid(complete_grid, nnz)
-            self.sudoku_grid.full_cells_indeces(half_grid)
             self.load_grid(half_grid)
         except error.UserResettedSudoku:
             self.reset_grid()
@@ -108,8 +114,6 @@ class Controller:
         cells_to_delete = 81 - nnz
         # mostra la progressbar inizialmente vuota
         self.view_manager.display_progressbar(max_value=cells_to_delete)
-        # memorizza il timetosleep desiderato
-        time_to_sleep = self.view_manager.get_time_after_delete()
         # itera fin quando non raggiungi il nnz desiderato
         while cells_to_delete > 0:
             # prendi l'ultima pos dell'array degli indici
@@ -120,11 +124,13 @@ class Controller:
                 # continuo se l'utente dà ok
                 if self.view_manager.display_choice('Non è possibile generare una griglia con '
                                                     'questo pattern di cancellazione. Riprovare?'):
+                    # resetto la progressbar
+                    self.view_manager.set_progressbar_value(0)
                     # se devi mostrare lo schema
                     if self.should_sleep_after_gen:
                         # mostralo e fai la sleep
                         self.load_grid(complete_grid)
-                        time.sleep(self.view_manager.get_time_after_generate())
+                        time.sleep(self.timetosleep_after_generate)
                     # dopodiché richiama la funzione
                     # cambiando prima il seme
                     random.seed()
@@ -159,7 +165,7 @@ class Controller:
                     # facciamo update della grid per ogni elem cancellato
                     self.load_grid(half_grid)
                     # e una sleep per farlo visualizzare
-                    time.sleep(time_to_sleep)
+                    time.sleep(self.timetosleep_after_delete)
             # se non è possibile, ripristino l'elemento salvato
             except error.SolverError:
                 half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]
