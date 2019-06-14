@@ -1,5 +1,6 @@
 from gurobipy import *
-import Controller.solver_error as error
+import Model.solver_error as error
+from Model.sudoku_chars import SudokuChars
 
 
 class GurobiController:
@@ -53,7 +54,7 @@ class GurobiController:
         for i in range(9):
             for j in range(9):
                 k = grid[i*9 + j]
-                if k not in '0.':
+                if k not in SudokuChars.delimiters:
                     self.vars[i, j, int(k)-1].LB = 1  # salvo k come k-1
 
     @property

@@ -1,5 +1,5 @@
 import Controller.gurobi_controller as gurobi
-import Controller.solver_error as error 
+import Model.solver_error as error
 import Model.sudoku_grid as model
 import View.sudoku_view_manager as view
 import random
@@ -51,6 +51,7 @@ class Controller:
         # partendo dallo schema completo
         try:
             half_grid = self.generate_half_grid(complete_grid, nnz)
+            self.sudoku_grid.full_cells_indeces(half_grid)
             self.load_grid(half_grid)
         except error.UserResettedSudoku:
             self.reset_grid()
@@ -116,7 +117,9 @@ class Controller:
             try:
                 pos = idxs_full_cells[-1]
             except IndexError:  # se ho saturato l'array
-                if self.view_manager.display_choice('Non è possibile generare una griglia con questa cancellazione. Dare OK per riprovare.'):
+                # continuo se l'utente dà ok
+                if self.view_manager.display_choice('Non è possibile generare una griglia con '
+                                                    'questo pattern di cancellazione. Riprovare?'):
                     # se devi mostrare lo schema
                     if self.should_sleep_after_gen:
                         # mostralo e fai la sleep
@@ -126,6 +129,7 @@ class Controller:
                     # cambiando prima il seme
                     random.seed()
                     return self.generate_half_grid(complete_grid, nnz)
+                # se l'utente annulla, chiudiamo tutto
                 else:
                     self.view_manager.remove_progressbar()
                     raise error.UserResettedSudoku

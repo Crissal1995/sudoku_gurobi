@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
-from Model.sudoku_grid import SudokuGrid
+from Model.sudoku_grid import SudokuGrid, SudokuChars
 from View.sudoku_cell import SudokuCell
 
 
@@ -16,8 +16,7 @@ class SudokuFrame(Frame):
         self.subgrids = self.make_subgrids()
         # otteniamo le celle (frame) e le celle nella sottogriglia (indici)
         # che ci servono poi dopo nel gurobi_controller
-        cells_frame = self.make_cells()
-        self.cells = cells_frame
+        self.cells = self.make_cells()
 
     def make_subgrids(self):
         subgrids = []
@@ -71,17 +70,24 @@ class SudokuFrame(Frame):
         return cells
 
     def load_grid(self, grid: str, first_load=True):
-        assert(self.sudoku_grid.is_valid_grid())
+        # controlla che il sudoku sia valido
+        assert(self.sudoku_grid.is_valid_grid(grid))
+        # cicla tutte le 81 digits
         for i in range(81):
+            # al primo caricamento rende le celle non statiche
             if first_load:
                 self.cells[i].make_nonstatic()
+            # cattura il valore
             digit = grid[i]
-            if digit in SudokuGrid.delimiters:
+            # se è un delimiter dagli un val nullo
+            if digit in SudokuChars.delimiters:
                 digit = ''
             self.cells[i].set_value(digit)
+            # se è un numero ed è il primo caricamento
+            # rende statica la cella
             if digit != '' and first_load:
                 self.cells[i].make_static()
-        # cambiare la griglia inserita
+        # cambia la griglia inserita
         self.sudoku_grid.set_grid(grid)
 
     def reset_grid(self):
