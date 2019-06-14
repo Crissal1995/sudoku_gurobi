@@ -133,27 +133,22 @@ class ViewManager:
         return messagebox.askokcancel('Scelta', message)
 
     def gen_button_click(self):
-        # blocca gli input
-        self.disable_inputs()
-        # genera il sudoku
+        self.disable_buttons()
         self.controller.generate_sudoku()
-        # sblocca gli input
-        self.enable_inputs()
+        self.enable_buttons()
     
     def risolve_button_click(self):
-        self.disable_inputs()
+        self.disable_buttons()
         self.controller.risolve_sudoku()
-        self.enable_inputs()
+        self.enable_buttons()
 
-    def disable_inputs(self):
+    def disable_buttons(self):
         self.gen_button['state'] = DISABLED
         self.risolve_button['state'] = DISABLED
-        self.disable_timetosleep_entries()
     
-    def enable_inputs(self):
+    def enable_buttons(self):
         self.gen_button['state'] = NORMAL
         self.risolve_button['state'] = NORMAL
-        self.enable_timetosleep_entries()
 
     def disable_timetosleep_entries(self):
         self.timetosleep_after_delete_entry['state'] = DISABLED
@@ -178,6 +173,7 @@ class ViewManager:
 
     def set_progressbar_value(self, value):
         self.progress_bar['value'] = value
+        self.update_graphics()
 
     def increment_progressbar(self):
         # incrementa il valore della progress bar
