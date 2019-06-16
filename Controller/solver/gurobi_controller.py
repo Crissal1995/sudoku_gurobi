@@ -1,14 +1,15 @@
 from gurobipy import *
-import Model.solver_error as error
+import Model.sudoku_exceptions as error
 from Model.sudoku_chars import SudokuChars
+from Controller.solver import sudoku_solver_interface as interface
 
 
-class GurobiController:
+class GurobiController(interface.SudokuSolver):
     # il costruttore crea modello e vincoli seguendo le regole del sudoku;
     # per poter differenziare lo schema, dobbiamo chiamare la funzione set_grid()
     # per poter assegnare un lowerbound di 1 alla cella (i,j) con valore k -> x_ijk
     def __init__(self):
-        self.model: Model = Model('gus')
+        self.model: Model = Model('sudoku')
         self.vars = self.model.addVars(9, 9, 9, vtype=GRB.BINARY, name='x_ijk')
         # Vincoli:
         #
@@ -70,15 +71,15 @@ class GurobiController:
             # i,j = x_ijk[:1]
             k = x_ijk[2]
             if value == 1:
-                grid_sol += f'{k+1}'  # salvo k come k+1
+                grid_sol += str(k+1)  # salvo k come k+1
         return grid_sol
 
     # funzione per risolvere una griglia passata in input
     def resolve_grid(self, grid: str):
+        self._reset_vars()
         self._set_vars(grid)
         try: 
             sol = self._resolve_grid()
         except GurobiError:
-            raise error.SolverError()
-        self._reset_vars()
+            raise error.SolverInfeasibleError()
         return sol

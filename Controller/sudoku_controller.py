@@ -1,5 +1,5 @@
-import Controller.gurobi_controller as gurobi
-import Model.solver_error as error
+import Controller.solver_controller as solver
+import Model.sudoku_exceptions as error
 import Model.sudoku_grid as model
 import View.sudoku_view_manager as view
 import random
@@ -16,8 +16,8 @@ class Controller:
         self.sudoku_grid = model.SudokuGrid()
         # creiamo la gui del programma
         self.view_manager = view.ViewManager(self)
-        # creazione controller Gurobi e relativo modello
-        self.solver = gurobi.GurobiController()
+        # instanziamo il solver di risoluzione
+        self.solver = solver.SolverController().get_solver()
         # settiamo una griglia di partenza
         self.load_current_grid()
 
@@ -59,7 +59,7 @@ class Controller:
         try:
             half_grid = self.generate_half_grid(complete_grid, nnz)
             self.load_grid(half_grid)
-        except error.UserResettedSudoku:
+        except error.UserResettedSudokuException:
             self.reset_grid()
 
     def risolve_sudoku(self):
@@ -70,7 +70,7 @@ class Controller:
         try:
             grid_sol = self.solver.resolve_grid(self.sudoku_grid.grid)
         # se non è possibile c'è un errore
-        except error.SolverError:
+        except error.SolverInfeasibleError:
             return self.view_manager.display_error('Il sudoku non ha soluzione!')
         # altrimenti prendi la soluzione del solver
         # settala come griglia del model
@@ -138,7 +138,7 @@ class Controller:
                 # se l'utente annulla, chiudiamo tutto
                 else:
                     self.view_manager.remove_progressbar()
-                    raise error.UserResettedSudoku
+                    raise error.UserResettedSudokuException
             # rimuovo la posizione sia se metto '0' (vuota)
             # sia se non posso rimuoverla a causa di GurobiError
             idxs_full_cells.remove(pos)
@@ -167,7 +167,7 @@ class Controller:
                     # e una sleep per farlo visualizzare
                     time.sleep(self.timetosleep_after_delete)
             # se non è possibile, ripristino l'elemento salvato
-            except error.SolverError:
+            except error.SolverInfeasibleError:
                 half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]
         self.view_manager.remove_progressbar()
         return half_grid

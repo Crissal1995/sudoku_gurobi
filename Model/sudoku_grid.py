@@ -1,12 +1,10 @@
-# applichiamo il pattern Singleton alla classe
-# per gestire un'unica griglia sudoku
-import Controller.gurobi_controller as gurobi
-import Model.solver_error as error
+import Controller.solver_controller as solver
+import Model.sudoku_exceptions as error
 from Model.sudoku_chars import SudokuChars
 
 
 class SudokuGrid:
-    default_grid = '0'*81
+    default_grid = '0' * 81
     grid: str
     __instance = None
     __solver = None
@@ -16,13 +14,8 @@ class SudokuGrid:
         if SudokuGrid.__instance is None:
             SudokuGrid.__instance = object.__new__(cls)
         SudokuGrid.__instance.grid = grid
+        SudokuGrid.__solver = solver.SolverController().get_solver()
         return SudokuGrid.__instance
-
-    @staticmethod
-    def get_solver():
-        if SudokuGrid.__solver is None:
-            SudokuGrid.__solver = gurobi.GurobiController()
-        return SudokuGrid.__solver
 
     @property
     def full_cells_count_current_grid(self):
@@ -39,9 +32,9 @@ class SudokuGrid:
     def is_valid_grid(grid: str):
         try:
             assert(len([char for char in grid if char in SudokuChars.valids]) == 81)
-            SudokuGrid.get_solver().resolve_grid(grid)
+            SudokuGrid.__solver.resolve_grid(grid)
             return True
-        except (error.SolverError, AssertionError):
+        except (error.SolverInfeasibleError, AssertionError):
             return False
 
     @staticmethod
