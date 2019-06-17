@@ -11,7 +11,7 @@ class MipController(ISudokuSolver):
         self.x = None
 
     def _make_model(self):
-        self.model = Model('sudoku')
+        self.model = Model('sudoku', solver_name='cbc')
         # creazione variabili binarie
         self.x = [[[self.model.add_var(name='x_{}{}{}'.format(i, j, k), var_type=BINARY)
                   for k in range(9)] for j in range(9)] for i in range(9)]
