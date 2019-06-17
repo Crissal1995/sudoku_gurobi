@@ -1,15 +1,19 @@
 from gurobipy import *
 import Model.sudoku_exceptions as error
 from Model.sudoku_chars import SudokuChars
-from Controller.solver import sudoku_solver_interface as interface
+from Controller.sudoku_solver_interface import ISudokuSolver
 
 
-class GurobiController(interface.SudokuSolver):
+class GurobiController(ISudokuSolver):
     # il costruttore crea modello e vincoli seguendo le regole del sudoku;
     # per poter differenziare lo schema, dobbiamo chiamare la funzione set_grid()
     # per poter assegnare un lowerbound di 1 alla cella (i,j) con valore k -> x_ijk
     def __init__(self):
-        self.model: Model = Model('sudoku')
+        self.model = None
+        self.vars = None
+
+    def _make_model(self):
+        self.model = Model('sudoku')
         self.vars = self.model.addVars(9, 9, 9, vtype=GRB.BINARY, name='x_ijk')
         # Vincoli:
         #
@@ -29,11 +33,11 @@ class GurobiController(interface.SudokuSolver):
         self.model.addConstrs(
             (quicksum(
                 self.vars[i, j, k]
-                for i in range(subrow * 3, (subrow+1) * 3)
-                for j in range(subcol * 3, (subcol+1) * 3)) == 1
-                for k in range(9)
-                for subrow in range(3)
-                for subcol in range(3)
+                for i in range(subrow * 3, (subrow + 1) * 3)
+                for j in range(subcol * 3, (subcol + 1) * 3)) == 1
+             for k in range(9)
+             for subrow in range(3)
+             for subcol in range(3)
              )
         )
         # Funzione obiettivo, massimizzo la somma delle variabili x_ijk

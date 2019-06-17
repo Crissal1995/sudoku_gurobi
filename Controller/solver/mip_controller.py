@@ -1,12 +1,16 @@
 from mip.model import *
-import Controller.solver.sudoku_solver_interface as interface
+from Controller.sudoku_solver_interface import ISudokuSolver
 from Model.sudoku_chars import SudokuChars
 import Model.sudoku_exceptions as error
 
 
-class MipController(interface.SudokuSolver):
+class MipController(ISudokuSolver):
 
     def __init__(self):
+        self.model = None
+        self.x = None
+
+    def _make_model(self):
         self.model = Model('sudoku')
         # creazione variabili binarie
         self.x = [[[self.model.add_var(name='x_{}{}{}'.format(i, j, k), var_type=BINARY)

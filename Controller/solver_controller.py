@@ -1,4 +1,4 @@
-import Controller.solver.sudoku_solver_interface as interface
+from Controller.sudoku_solver_interface import ISudokuSolver
 import Model.sudoku_exceptions as error
 try:
     import Controller.solver.gurobi_controller as gurobi
@@ -20,6 +20,9 @@ class SolverController:
 
     def __init__(self):
         self._solvers = dict()
+        self._solver = None
+        self._solver_name = None
+
         if gurobi:
             self._solvers['gurobi'] = gurobi.GurobiController()
         if mip:
@@ -28,12 +31,17 @@ class SolverController:
             raise error.SolverNotExistingError('Installare almeno un risolutore '
                                                'compatibile col progetto!')
         for solver in self._solvers.values():
-            if not isinstance(solver, interface.SudokuSolver):
+            if not isinstance(solver, ISudokuSolver):
                 raise error.SolverNotStandardError('Il solver selezionato non è compatibile con '
                                                    'l\'interfaccia richiesta')
 
     def get_solver(self):
-        return self.get_solver_byname(self._get_solvers()[0])
+        if not self._solver:
+            key = self._get_solvers()[0]
+            self._solver_name = key
+            self._solver = self.get_solver_byname(key)
+            self._solver._make_model()
+        return self._solver
 
     def get_solver_byname(self, name: str):
         if name in self._solvers:
@@ -46,7 +54,7 @@ class SolverController:
 
     def _del_solver(self, name):
         if name in self._solvers:
-            del self._solvers[name]
+            return self._solvers.pop(name)
         else:
             raise error.SolverNotExistingError('Non è possibile cancellare un solver '
                                                'non presente nel progetto!')
