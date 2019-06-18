@@ -52,8 +52,11 @@ class MipController(ISudokuSolver):
                 if k not in SudokuChars.delimiters:
                     self.x[i][j][int(k)-1].lb = 1
 
+    # funzione per risolvere la griglia corrente
     def _resolve_grid(self):
+        # Funzione che invoca gurobi per risolvere il problema
         status = self.model.optimize()
+        # Controllo lo stato di terminazione del risolutore
         if status not in (OptimizationStatus.FEASIBLE, OptimizationStatus.OPTIMAL):
             raise error.SolverInfeasibleError
         grid_sol = ''
@@ -65,6 +68,7 @@ class MipController(ISudokuSolver):
                         grid_sol += str(k+1)
         return grid_sol
 
+    # funzione per risolvere una griglia passata in input
     def resolve_grid(self, grid: str):
         self._reset_vars()
         self._set_vars(grid)

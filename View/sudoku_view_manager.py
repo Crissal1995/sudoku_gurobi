@@ -4,6 +4,7 @@ import View.sudoku_frame as model
 from tkinter import messagebox
 
 
+# Gestisce e crea tutta la GUI
 class ViewManager:
     nnz_text_whenScale = 'Numero di celle piene desiderate: '
     nnz_text_whenProgress = 'Numero di celle piene: '

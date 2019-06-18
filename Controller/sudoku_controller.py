@@ -76,6 +76,8 @@ class Controller:
         # settala come griglia del model
         self.load_grid(grid_sol, first_load=False)
 
+    # Sfruttiamo il solver per creare un sudoku pieno di partenza, fissiamo 9 numeri in delle posizioni e risolviamo
+    # il sudoku usando il solver
     def generate_full_grid(self):
         # creiamo una lista di 9 numeri
         digits_list = list(range(1, 10))
@@ -84,14 +86,16 @@ class Controller:
         # ordiniamo in un ordine sempre differente
         random.shuffle(digits_list)
         seed = '0' * 81
-        # fissiamo i quattro angoli della matrice
+        # fissiamo i valori per i quattro angoli della matrice
         for row in [0, 8]:
             for col in [0, 8]:
                 pos = row*9 + col
                 element = random.choice(digits_list)
                 digits_list.remove(element)
+                # Sostituisco nella griglia (stringa) la cella con il nuovo valore scelto casualmente
                 seed = seed[:pos] + str(element) + seed[pos+1:]
-        # fissiamo i rimanenti numeri della lista nel resto della matrice
+        # fissiamo i rimanenti numeri della lista nel resto della matrice, evitando le righe e le colonne in cui
+        # abbiamo già settato un valore, così siamo sicuri di non generare sudoku non risolvibili
         for element in digits_list:
             row = random.randint(1, 7)
             col = random.randint(1, 7)
@@ -102,6 +106,8 @@ class Controller:
         # disposti in maniera casuale
         return self.solver.resolve_grid(seed)
 
+    # Partendo da un sudoku risolto, eliminiamo delle celle per ottenere un sudoku da risolvere e sicuramente
+    # risolvibile.
     def generate_half_grid(self, complete_grid, nnz):
         # copia la griglia e lavora su di essa
         half_grid = complete_grid
@@ -146,11 +152,12 @@ class Controller:
             old_elem = half_grid[pos]
             # rimuovo l'elem dalla griglia
             half_grid = half_grid[:pos] + '0' + half_grid[pos+1:]
-            # controllo se è possibile risolvere la griglia
+            # controllo se è possibile risolvere la griglia per capire se la rimozione è valida o meno
             try:
                 # risolvi la griglia
                 solution_grid = self.solver.resolve_grid(half_grid)
-                # controlla se la sol trovata non coincide con quella precedente
+                # controlla se la sol trovata non coincide con quella precedente, devo sempre risolvere lo
+                # stesso sudoku
                 if solution_grid != complete_grid:
                     # se non coincide, allora ripristina l'elem
                     half_grid = half_grid[:pos] + old_elem + half_grid[pos+1:]

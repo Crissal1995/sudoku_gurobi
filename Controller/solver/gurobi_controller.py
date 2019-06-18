@@ -53,7 +53,7 @@ class GurobiController(ISudokuSolver):
                 for k in range(9):
                     self.vars[i,j,k].LB = 0
 
-    # funzione per settare i vincoli, data una griglia (str) in ingresso
+    # funzione per settare i valori delle variabili del problema, data una griglia (str) in ingresso
     def _set_vars(self, grid: str):
         assert(len(grid) == 81)
         for i in range(9):
@@ -68,8 +68,11 @@ class GurobiController(ISudokuSolver):
 
     # funzione per risolvere la griglia corrente
     def _resolve_grid(self):
+        # Funzione che invoca gurobi per risolvere il problema
         self.model.optimize()
+        # Prendo la soluzione fornita da gurobi
         vars_dict = self.model.getAttr('X', self.vars)
+        # La trasformo in una griglia valida
         grid_sol = ''
         for x_ijk, value in vars_dict.items():
             # i,j = x_ijk[:1]

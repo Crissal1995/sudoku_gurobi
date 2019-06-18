@@ -1,8 +1,9 @@
+# Librerie grafiche native di python
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import font
 
-
+# Classe che gestisce (GUI) una cella del sudoku
 class SudokuCell(Frame):
     def __init__(self, parent, row, column, is_static=False):
         super().__init__(parent)
@@ -17,8 +18,8 @@ class SudokuCell(Frame):
                            textvariable=self.text)
         self.entry.pack(ipady=3)
 
-    # funzione callback per non permettere l'inserimento dell'utente
-    # solo generazione e risolutore sudoku
+    # funzione callback che blocca l'inserimento dell'utente e vincolare la scrittura della cella
+    # solo per la funzione di generazione e risoluzione del sudoku
     @staticmethod
     def validate_input():
         return False
@@ -32,9 +33,9 @@ class SudokuCell(Frame):
     def clear_value(self):
         self.text.set('')
 
-    # funzione per rendere una cella statica o meno;
-    # generiamo prima una griglia di celle non statiche e poi, in base
-    # al puzzle che abbiamo come input, rendiamo determinate celle statiche
+    # funzione per rendere una cella fissa o meno;
+    # generiamo prima una griglia di celle non fisse e poi, in base
+    # al puzzle che abbiamo come input, rendiamo determinate celle fisse e altre non fisse
     def make_static(self):
         self.is_static = True
         self.entry['state'] = DISABLED

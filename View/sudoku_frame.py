@@ -18,6 +18,7 @@ class SudokuFrame(Frame):
         # che ci servono poi dopo nel gurobi_controller
         self.cells = self.make_cells()
 
+    # crea un riquadro 3x3
     def make_subgrids(self):
         subgrids = []
         for i in range(3):
@@ -31,6 +32,7 @@ class SudokuFrame(Frame):
                 subgrids.append(subf)
         return subgrids
 
+    # crea le celle in tutta la griglis
     def make_cells(self):
         cells = []
         for i in range(9):
@@ -58,7 +60,7 @@ class SudokuFrame(Frame):
                         sub_idx = 7
                     else:
                         sub_idx = 8
-                # assegna la cella al subframe individuato prima
+                # assegna la cella al subframe (riquadro) individuato prima
                 subgrid = self.subgrids[sub_idx]
                 cell = SudokuCell(subgrid, i, j)
                 # posiziona la cella nella sottogriglia
@@ -79,17 +81,18 @@ class SudokuFrame(Frame):
                 self.cells[i].make_nonstatic()
             # cattura il valore
             digit = grid[i]
-            # se è un delimiter dagli un val nullo
+            # se è un delimiter dagli un val nullo (Cella vuota)
             if digit in SudokuChars.delimiters:
                 digit = ''
             self.cells[i].set_value(digit)
             # se è un numero ed è il primo caricamento
-            # rende statica la cella
+            # rende fissa la cella
             if digit != '' and first_load:
                 self.cells[i].make_static()
         # cambia la griglia inserita
         self.sudoku_grid.set_grid(grid)
 
+    # Pulisce la griglia
     def reset_grid(self):
         for i in range(81):
             self.cells[i].clear_value()
